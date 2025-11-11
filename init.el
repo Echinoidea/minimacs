@@ -146,11 +146,39 @@
   (meow-setup)
   (meow-global-mode 1))
 
-;;(meow-normal-define-key
-;;  '("z z" . (lambda () (interactive) (recenter nil)))     ; center
-;;  '("z t" . (lambda () (interactive) (recenter 0)))       ; top
-;;  '("z b" . (lambda () (interactive) (recenter -1))))     ; bottom
-;;
+;; Set jk as escape insert mode
+(setq meow-two-char-escape-sequence "jk")
+(setq meow-two-char-escape-delay 0.5)
+
+(defun meow--two-char-exit-insert-state (s)
+  (when (meow-insert-mode-p)
+    (let ((modified (buffer-modified-p)))
+      (insert (elt s 0))
+      (let* ((second-char (elt s 1))
+             (event
+              (if defining-kbd-macro
+                  (read-event nil nil)
+              (read-event nil nil meow-two-char-escape-delay))))
+        (when event
+          (if (and (characterp event) (= event second-char))
+              (progn
+                (backward-delete-char 1)
+                (set-buffer-modified-p modified)
+                (meow--execute-kbd-macro "<escape>"))
+            (push event unread-command-events)))))))
+
+(defun meow-two-char-exit-insert-state ()
+  (interactive)
+  (meow--two-char-exit-insert-state meow-two-char-escape-sequence))
+
+(define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
+  #'meow-two-char-exit-insert-state)
+;; end j k 
+
+
+(keymap-global-set "C-h C-t" 'consult-theme)
+
+
 (use-package which-key
   :config
   (which-key-mode))
@@ -175,7 +203,7 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'doom-one t)
+  (load-theme 'doom-gruvbox t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -195,6 +223,7 @@
 (use-package mood-line
   :straight '(mood-line :type git :host github :repo "jessiehildebrandt/mood-line" :branch "master")
   :config (mood-line-mode))
+;; 
 ;; MODELINE
 ;; (use-package moody
 ;;   :config
@@ -245,6 +274,14 @@
 ;; To disable shortcut "jump" indicators for each section, set
 (setq dashboard-show-shortcuts t)
 
+
+
+(use-package spacious-padding)
+(spacious-padding-mode)
+
+
+
+
 ;; ACE WINODW
 (use-package ace-window
   :bind (("M-o" . ace-window))
@@ -258,18 +295,35 @@
   '("w l" . windmove-right)
   '("w j" . windmove-down)
   '("w k" . windmove-up)
-  '("w v" . split-window-vertically)
-  '("w s" . split-window-horizontally)
+  '("w v" . split-window-horizontally)
+  '("w s" . split-window-vertically)
   '("w d" . delete-window)
   '("f f" . find-file)
   '("b b" . consult-buffer)
   )
 
+(use-package activities
+  :straight (:host github :repo "alphapapa/activities.el"))
 
-;; Add to meow leader
-;; (meow-leader-define-key
-;;   '("w w" . ace-window))
-;; 
+(use-package activities
+  :init
+  (activities-mode)
+  (activities-tabs-mode)
+  ;; Prevent `edebug' default bindings from interfering.
+  (setq edebug-inhibit-emacs-lisp-mode-bindings t)
+
+  :bind
+  (("C-x C-a C-n" . activities-new)
+   ("C-x C-a C-d" . activities-define)
+   ("C-x C-a C-a" . activities-resume)
+   ("C-x C-a C-s" . activities-suspend)
+   ("C-x C-a C-k" . activities-kill)
+   ("C-x C-a RET" . activities-switch)
+   ("C-x C-a b" . activities-switch-buffer)
+   ("C-x C-a g" . activities-revert)
+   ("C-x C-a l" . activities-list)))
+
+
 ;; PROJECTILE
 (use-package projectile
   :ensure t
@@ -297,7 +351,7 @@
 
 (use-package orderless
   :custom
-  (completion-styles '(orderless basic))
+  (completion-styles '(orderless flex partial-completion))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
 
@@ -437,27 +491,36 @@
   ;; ...
 )
 
-(use-package perspective
-  :bind
-  ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
-  :init
-  (persp-mode))
 
-(setq switch-to-prev-buffer-skip
-      (lambda (win buff bury-or-kill)
-        (not (persp-is-current-buffer buff))))
+(use-package nix-mode
+  :mode "\\.nix\\'")
 
-(add-hook 'ibuffer-hook
-          (lambda ()
-            (persp-ibuffer-set-filter-groups)
-            (unless (eq ibuffer-sorting-mode 'alphabetic)
-              (ibuffer-do-sort-by-alphabetic))))
+(use-package tuareg-mode
+  :mode "\\.ml\\'")
+
+;; (use-package perspective
+;;   :bind
+;;   ("C-x C-b" . persp-list-buffers)         ; or use a nicer switcher, see below
+;;   :custom
+;;   (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+;;   :init
+;;   (persp-mode))
+
+;; (setq switch-to-prev-buffer-skip
+;;       (lambda (win buff bury-or-kill)
+;;         (not (persp-is-current-buffer buff))))
+;; 
+;; (add-hook 'ibuffer-hook
+;;           (lambda ()
+;;             (persp-ibuffer-set-filter-groups)
+;;             (unless (eq ibuffer-sorting-mode 'alphabetic)
+;;               (ibuffer-do-sort-by-alphabetic))))
+;; 
+
+;; (consult-customize consult--source-buffer :hidden t :default nil)
+;; (add-to-list 'consult-buffer-sources persp-consult-source)
 
 
-(consult-customize consult--source-buffer :hidden t :default nil)
-(add-to-list 'consult-buffer-sources persp-consult-source)
 
 
 ;; The built-in `savehist-mode' saves minibuffer histories.  Vertico
