@@ -16,8 +16,12 @@
 
 (server-start)
 
-(setq gc-cons-threshold 1073741824) (run-with-idle-timer 5 t (lambda () (garbage-collect)))
-(setq read-process-output-max (* 1024 1024))
+;; (setq gc-cons-threshold 1073741824) (run-with-idle-timer 5 t (lambda () (garbage-collect)))
+;; (setq read-process-output-max (* 1024 1024))
+
+(setq read-process-output-max (* 10 1024 1024)) ;; 10mb
+(setq gc-cons-threshold 200000000)
+
 (setq lsp-log-io nil)
 
 (defvar bootstrap-version)
@@ -228,8 +232,6 @@
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (nerd-icons must be installed!)
-  (doom-themes-neotree-config)
   ;; or for treemacs users
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
@@ -503,15 +505,43 @@
 
 ;; Enable Corfu completion UI
 ;; See the Corfu README for more configuration tips.
+;;;; Code Completion
 (use-package corfu
+  :ensure t
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
+  (corfu-auto-delay 0)            ; No delay for completion
+  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that numver of seconds
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
+  ;; Optionally use TAB for cycling, default is `corfu-complete'.
+  :bind (:map corfu-map
+              ("M-SPC"      . corfu-insert-separator)
+              ("TAB"        . corfu-next)
+              ([tab]        . corfu-next)
+              ("S-TAB"      . corfu-previous)
+              ([backtab]    . corfu-previous)
+              ("S-<return>" . corfu-insert)
+              ("RET"        . corfu-insert))
+
   :init
   (global-corfu-mode)
-  :custom
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-auto-delay 0.2)         ;; Small delay
-  (corfu-auto-prefix 3)          ;; Complete after 2 chars
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-preselect 'prompt))     ;; Preselect the prompto 
+  (corfu-history-mode)
+  (corfu-popupinfo-mode) ; Popup completion info
+  :config
+  (add-hook 'eshell-mode-hook
+            (lambda () (setq-local corfu-quit-at-boundary t
+                                   corfu-quit-no-match t
+                                   corfu-auto nil)
+              (corfu-mode))
+            nil
+            t))
+
+
 ;; Add extensions
 (use-package cape
   ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
@@ -547,43 +577,209 @@
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 
+
+;; Treesit
+(use-package treesit
+  :straight nil
+  :mode (("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.js\\'"  . typescript-ts-mode)
+         ("\\.mjs\\'" . typescript-ts-mode)
+         ("\\.mts\\'" . typescript-ts-mode)
+         ("\\.cjs\\'" . typescript-ts-mode)
+         ("\\.ts\\'"  . typescript-ts-mode)
+         ("\\.jsx\\'" . tsx-ts-mode)
+         ("\\.json\\'" .  json-ts-mode)
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+         ("\\.prisma\\'" . prisma-ts-mode))
+  :preface
+  (dolist (mapping
+           '((python-mode . python-ts-mode)
+             (css-mode . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js-mode . typescript-ts-mode)
+             (js2-mode . typescript-ts-mode)
+             (c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (c-or-c++-mode . c-or-c++-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (css-mode . css-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)
+             (sh-mode . bash-ts-mode)
+             (sh-base-mode . bash-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping)))
+
+;; ;; Combobulate as a separate package
+;; ;; Combobulate as a separate package
+;; (use-package combobulate
+;;   :straight (combobulate 
+;;              :type git 
+;;              :host github 
+;;              :repo "mickeynp/combobulate"
+;;              :files ("*.el"))  ; Only load .el files, ignore submodules
+;;   :preface
+;;   (setq combobulate-key-prefix "C-c o")
+;;   :hook
+;;   ((python-ts-mode . combobulate-mode)
+;;    (js-ts-mode . combobulate-mode)
+;;    (go-ts-mode . combobulate-mode)
+;;    (html-ts-mode . combobulate-mode)
+;;    (css-ts-mode . combobulate-mode)
+;;    (yaml-ts-mode . combobulate-mode)
+;;    (typescript-ts-mode . combobulate-mode)
+;;    (json-ts-mode . combobulate-mode)
+;;    (tsx-ts-mode . combobulate-mode)))
 ;; LSP
+
 (use-package lsp-mode
-	:config
-  ;; Define the face
-  (defface lsp-flycheck-info-unnecessary
-    '((t :inherit shadow :underline t))
-    "Face for unnecessary code."
-    :group 'lsp-mode)
-  
-  ;; Define the flycheck error level
-  (with-eval-after-load 'flycheck
-    (flycheck-define-error-level 'lsp-flycheck-info-unnecessary
-      :severity 'info
-      :compilation-level 0
-      :overlay-category 'flycheck-info-overlay
-      :fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-      :fringe-face 'flycheck-fringe-info
-      :error-list-face 'flycheck-error-list-info))
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  :hook ((nix-mode . lsp-deferred)
-         (tuareg-mode . lsp-deferred)
-         (tsx-ts-mode . lsp-deferred)
-         (typescript-ts-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp
+  :diminish "LSP"
+  :ensure t
+  :hook ((lsp-mode . lsp-diagnostics-mode)
+         (lsp-mode . lsp-enable-which-key-integration)
+         ((tsx-ts-mode
+           typescript-ts-mode
+           js-ts-mode) . lsp-deferred))
   :custom
-	(lsp-idle-delay 0.8
-									lsp-semantic-tokens nil
-									lsp-log-io nil)
-  ;; lsp-completion-provider :none)
-  ;; This is the key part - use corfu instead of lsp-ui
-  ;; (lsp-completion-provider :none) ;; we use Corfu!
-	;; 	(lsp-idle-delay 0.1)
-	;; 	(lsp-completion-show-detail t)
-	;; (lsp-completion-show-kind t)
-	) 
+  (lsp-keymap-prefix "C-c l")           ; Prefix for LSP actions
+  (lsp-completion-provider :none)       ; Using Corfu as the provider
+  (lsp-diagnostics-provider :flycheck)
+  (lsp-session-file (locate-user-emacs-file ".lsp-session"))
+  (lsp-log-io nil)                      ; IMPORTANT! Use only for debugging! Drastically affects performance
+  (lsp-keep-workspace-alive nil)        ; Close LSP server if all project buffers are closed
+  (lsp-idle-delay 0.5)                  ; Debounce timer for `after-change-function'
+  ;; core
+  (lsp-enable-xref t)                   ; Use xref to find references
+  (lsp-auto-configure t)                ; Used to decide between current active servers
+  (lsp-eldoc-enable-hover t)            ; Display signature information in the echo area
+  (lsp-enable-dap-auto-configure t)     ; Debug support
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-folding nil)              ; I disable folding since I use origami
+  (lsp-enable-imenu t)
+  (lsp-enable-indentation nil)          ; I use prettier
+  (lsp-enable-links nil)                ; No need since we have `browse-url'
+  (lsp-enable-on-type-formatting nil)   ; Prettier handles this
+  (lsp-enable-suggest-server-download t) ; Useful prompt to download LSP providers
+  (lsp-enable-symbol-highlighting t)     ; Shows usages of symbol at point in the current buffer
+  (lsp-enable-text-document-color nil)   ; This is Treesitter's job
+
+  (lsp-ui-sideline-show-hover nil)      ; Sideline used only for diagnostics
+  (lsp-ui-sideline-diagnostic-max-lines 20) ; 20 lines since typescript errors can be quite big
+  ;; completion
+  (lsp-completion-enable t)
+  (lsp-completion-enable-additional-text-edit t) ; Ex: auto-insert an import for a completion candidate
+  (lsp-enable-snippet t)                         ; Important to provide full JSX completion
+  (lsp-completion-show-kind t)                   ; Optional
+  ;; headerline
+  (lsp-headerline-breadcrumb-enable t)  ; Optional, I like the breadcrumbs
+  (lsp-headerline-breadcrumb-enable-diagnostics nil) ; Don't make them red, too noisy
+  (lsp-headerline-breadcrumb-enable-symbol-numbers nil)
+  (lsp-headerline-breadcrumb-icons-enable nil)
+  ;; modeline
+  (lsp-modeline-code-actions-enable nil) ; Modeline should be relatively clean
+  (lsp-modeline-diagnostics-enable nil)  ; Already supported through `flycheck'
+  (lsp-modeline-workspace-status-enable nil) ; Modeline displays "LSP" when lsp-mode is enabled
+  (lsp-signature-doc-lines 1)                ; Don't raise the echo area. It's distracting
+  (lsp-ui-doc-use-childframe t)              ; Show docs for symbol at point
+  (lsp-eldoc-render-all nil)            ; This would be very useful if it would respect `lsp-signature-doc-lines', currently it's distracting
+  ;; lens
+  (lsp-lens-enable nil)                 ; Optional, I don't need it
+  ;; semantic
+  (lsp-semantic-tokens-enable nil)      ; Related to highlighting, and we defer to treesitter
+	:preface
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    "Prepend emacs-lsp-booster command to lsp CMD."
+    (let ((orig-result (funcall old-fn cmd test?)))
+      (if (and (not test?)                             ;; for check lsp-server-present?
+               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+               lsp-use-plists
+               (not (functionp 'json-rpc-connection))  ;; native json-rpc
+               (executable-find "emacs-lsp-booster"))
+          (progn
+            (message "Using emacs-lsp-booster for %s!" orig-result)
+            (cons "emacs-lsp-booster" orig-result))
+        orig-result)))
+  :init
+  (setq lsp-use-plists t)
+  ;; Initiate https://github.com/blahgeek/emacs-lsp-booster for performance
+  (advice-add (if (progn (require 'json)
+                         (fboundp 'json-parse-buffer))
+                  'json-parse-buffer
+                'json-read)
+              :around
+              #'lsp-booster--advice-json-parse)
+  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command))
+
+
+
+(use-package lsp-completion
+  :no-require
+	:straight nil
+  :hook ((lsp-mode . lsp-completion-mode)))
+
+(use-package lsp-ui
+  :ensure t
+  :commands
+  (lsp-ui-doc-show
+   lsp-ui-doc-glance)
+  :bind (:map lsp-mode-map
+              ("C-c C-d" . 'lsp-ui-doc-glance))
+  :config (setq lsp-ui-doc-enable t
+                lsp-ui-doc-show-with-cursor nil      ; Don't show doc when cursor is over symbol - too distracting
+                lsp-ui-doc-include-signature t       ; Show signature
+                lsp-ui-doc-position 'at-point))
+
+
+(use-package lsp-eslint
+  :demand t
+	:straight nil
+  :after lsp-mode)
+
+
+;; (use-package lsp-mode
+;; 	:config
+;;   ;; Define the face
+;;   (defface lsp-flycheck-info-unnecessary
+;;     '((t :inherit shadow :underline t))
+;;     "Face for unnecessary code."
+;;     :group 'lsp-mode)
+
+;;   ;; Define the flycheck error level
+;;   (with-eval-after-load 'flycheck
+;;     (flycheck-define-error-level 'lsp-flycheck-info-unnecessary
+;;       :severity 'info
+;;       :compilation-level 0
+;;       :overlay-category 'flycheck-info-overlay
+;;       :fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
+;;       :fringe-face 'flycheck-fringe-info
+;;       :error-list-face 'flycheck-error-list-info))
+;;   :init
+;;   (setq lsp-keymap-prefix "C-c l")
+;;   :hook ((nix-mode . lsp-deferred)
+;;          (tuareg-mode . lsp-deferred)
+;;          (tsx-ts-mode . lsp-deferred)
+;;          (typescript-ts-mode . lsp-deferred)
+;;          (lsp-mode . lsp-enable-which-key-integration))
+;;   :commands lsp
+;;   :custom
+;; 	(lsp-idle-delay 0.8
+;; 									lsp-semantic-tokens nil
+;; 									lsp-log-io nil)
+;;   ;; lsp-completion-provider :none)
+;;   ;; This is the key part - use corfu instead of lsp-ui
+;;   ;; (lsp-completion-provider :none) ;; we use Corfu!
+;; 	;; 	(lsp-idle-delay 0.1)
+;; 	;; 	(lsp-completion-show-detail t)
+;; 	;; (lsp-completion-show-kind t)
+;; 	) 
 
 (with-eval-after-load 'lsp-mode
   ;; Tell lsp-mode how to identify these modes
@@ -740,11 +936,12 @@
 ;; (treemacs-start-on-boot)
 
 (use-package flycheck
-	:config
-	(setq flycheck-check-syntax-automatically '(save mode-enabled)
-				flycheck-display-errors-delay 0.5))
+  :ensure t
+  :init (global-flycheck-mode)
+  :bind (:map flycheck-mode-map
+              ("M-n" . flycheck-next-error) ; optional but recommended error navigation
+              ("M-p" . flycheck-previous-error)))
 
-(use-package lsp-ui)
 
 (defun my/lsp-mode-setup-completion ()
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
@@ -891,39 +1088,39 @@
 
 ;; (setq lsp-use-plists t)
 
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
+;; (defun lsp-booster--advice-json-parse (old-fn &rest args)
+;;   "Try to parse bytecode instead of json."
+;;   (or
+;;    (when (equal (following-char) ?#)
+;;      (let ((bytecode (read (current-buffer))))
+;;        (when (byte-code-function-p bytecode)
+;;          (funcall bytecode))))
+;;    (apply old-fn args)))
 
-(when lsp-use-plists
-  (advice-add (if (progn (require 'json)
-                         (fboundp 'json-parse-buffer))
-                  'json-parse-buffer
-                'json-read)
-              :around
-              #'lsp-booster--advice-json-parse))
+;; (when lsp-use-plists
+;;   (advice-add (if (progn (require 'json)
+;;                          (fboundp 'json-parse-buffer))
+;;                   'json-parse-buffer
+;;                 'json-read)
+;;               :around
+;;               #'lsp-booster--advice-json-parse))
 
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-            (setcar orig-result command-from-exec-path))
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
+;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+;;   "Prepend emacs-lsp-booster command to lsp CMD."
+;;   (let ((orig-result (funcall old-fn cmd test?)))
+;;     (if (and (not test?)                             ;; for check lsp-server-present?
+;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+;;              lsp-use-plists
+;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
+;;              (executable-find "emacs-lsp-booster"))
+;;         (progn
+;;           (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+;;             (setcar orig-result command-from-exec-path))
+;;           (message "Using emacs-lsp-booster for %s!" orig-result)
+;;           (cons "emacs-lsp-booster" orig-result))
+;;       orig-result)))
 
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+;; (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
 
 
