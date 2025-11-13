@@ -1,0 +1,437 @@
+#+TITLE: Ibegin TODOs
+#+CATEGORY: IBEGIN
+#+STARTUP: overview
+#+TODO: TODO DOING | DONE CANCELLED NO WAIT
+
+* Tasks
+** 1.2.6 [0%]
+*** TODO Cypress testing suites
+*** TODO Finish MVP admin dashboard
+*** TODO Mobile view
+*** TODO Half-screen view
+
+** 1.2.5 [82%]
+*** DONE [#A] Finish translations from Taylor :locale:
+CLOSED: [2025-10-31 Fri 15:53]
+*** DONE [#A] Add child is slow :bug:backend:
+CLOSED: [2025-10-29 Wed 18:16]
+*** DONE Make children table use single "go to screening" button :ui:feature:
+CLOSED: [2025-10-29 Wed 18:34]
+*** DONE Translate "Period" in navbar client side :locale:
+CLOSED: [2025-10-31 Fri 15:53]
+ - "Period" -> "Screening"
+*** DONE Proper favicon :misc:
+CLOSED: [2025-10-31 Fri 17:13]
+*** TODO Update help and resources :refactor:
+DEADLINE: <2025-11-12 Wed>
+*** DONE Un-enroll children :feature:
+CLOSED: [2025-10-31 Fri 17:58]
+*** DONE Fix the numbers in the individual report :ui:bug:
+CLOSED: [2025-10-31 Fri 17:21]
+ + They're meaningless right now. Needs to be fraction of total 
+*** DONE SQL Auditing log :feature:policy:
+*** DONE Home page buttons don't fill height :ui:bug:
+CLOSED: [2025-10-31 Fri 15:55]
+*** DONE Put screening spinner in center of screen :ui:bug:
+CLOSED: [2025-10-31 Fri 17:07]
+*** DONE [#A] Answering questions is insanely slow :ux:bug:
+CLOSED: [2025-10-31 Fri 14:37]
+ - Batch send answers and Prisma transaction
+*** DONE "Bilingual" -> "Both English and Spanish" :ui:task:
+CLOSED: [2025-10-31 Fri 14:37]
+*** DONE [#A] Transfered students child details says no screening even though it does exists :ux:bug:
+CLOSED: [2025-10-31 Fri 15:15]
+*** DONE Make child details button split into two saying "view report" | "open screening"
+CLOSED: [2025-10-31 Fri 17:27]
+*** DONE Screening questions are not being created upon adding child
+CLOSED: [2025-10-31 Fri 16:15]
+*** DONE [#A] Make middleware work less good. Don't auto log in :auth:task:
+CLOSED: [2025-10-31 Fri 16:40]
+*** DONE Chromium screening has scroll bars on each question text :ui:bug:
+CLOSED: [2025-10-31 Fri 17:09]
+*** DONE Chromium and firefox, if window height is less than modal height, elements float off of it :ui:bug:
+CLOSED: [2025-10-31 Fri 17:15]
+*** DONE When add new child, doesn't set selectedChild to newly added :bug:ux:
+CLOSED: [2025-10-31 Fri 16:18]
+*** DONE Return to correct page on go to screening
+CLOSED: [2025-10-31 Fri 17:38]
+*** TODO Selection items text is cut off on bottom
+*** DONE Spanish child-form-modal has buttons hanging off
+CLOSED: [2025-11-04 Tue 16:02]
+ - Maybe because subtitle on top overflows since Spanish version is longer
+*** DONE Make brithday just month and year with dropdowns
+CLOSED: [2025-11-04 Tue 16:01]
+*** DONE Disable child icon
+CLOSED: [2025-11-04 Tue 16:01]
+*** DONE Disable individual-dashboard
+CLOSED: [2025-11-04 Tue 16:01]
+*** DONE Add child: First Name -> First Name or Initial
+CLOSED: [2025-11-04 Tue 16:01]
+*** DONE FERPA Compliancy -> FERPA Compliance
+CLOSED: [2025-11-04 Tue 16:01]
+*** TODO [#B] Remove IP from auditing (can leave schema, just remove from audit wrapper)
+DEADLINE: <2025-11-12 Wed>
+*** TODO [#B] Check if admin features still work (they probably don't)
+DEADLINE: <2025-11-12 Wed>
+*** DONE Huge slow downs on prod, aws-0 on prod, aws-1 on staging
+CLOSED: [2025-11-07 Fri 20:03]
+ - Test staging ssl thing
+ - Delete staging db
+ - pg_restore to new db and see if it is aws-1
+ - if so, that is the new prod db, update envs and github actions
+ - assert that prod on new db is ALL GOOD AND FAST then DELETE the old prod db
+ - when old prod is deleted, make a new staging db and pg restore to it
+*** DONE Disable Data API in supabase
+CLOSED: [2025-11-07 Fri 20:03]
+*** DONE Get spreadsheets from Taylor
+DEADLINE: <2025-11-07 Fri>
+*** DONE Make scripts to upload children data from ID
+DEADLINE: <2025-11-07 Fri>
+*** TODO Make scripts to upload teacher data from ID or custom ID
+*** TODO [#B] Make basic admin dashboard functionality
+DEADLINE: <2025-11-12 Wed>
+*** DONE Middleware admin-only pages
+*** TODO Make 60 second sizzler reel of all app functionality
+*** DONE Add child cant see in table :bug:ui:
+CLOSED: [2025-11-07 Fri 20:03] DEADLINE: <2025-11-07 Fri>
+** 1.2.4
+*** TransferModal
+**** DONE [#B] Footer is beyond bottom of modal
+CLOSED: [2025-10-20 Mon 20:15]
+**** DONE [#B] Local storage for name if no name found
+CLOSED: [2025-10-20 Mon 20:34]
+**** DONE [#B] Make transfer modal pop up on new screening period start, add to ScreeningPeriodContext ~isNewPeriod~
+CLOSED: [2025-10-20 Mon 19:21]
+*** Home Page
+**** DONE Data highlights :feature:
+CLOSED: [2025-10-26 Sun 19:01]
+*** Database
+**** TODO Add teacher names and demographics :deploy:
+*** Children page table
+**** DONE Default name value for child in children page table
+CLOSED: [2025-10-20 Mon 22:42]
+*** ChildDetails
+**** DONE [#B] Child Details edit child modal to add name and stuff
+CLOSED: [2025-10-22 Wed 18:56]
+**** DONE Recent Screenings in Child Details displays partially complete screening as "Completed", issue starts when answering any question
+CLOSED: [2025-10-22 Wed 13:38]
+- ChildDetails table was using allScreenings without checking if isComplete
+**** DONE [#B] Child Details Screening | Report button is missing
+CLOSED: [2025-10-22 Wed 18:56]
+        - screening is undefined in ChildDetails for some reason, conditional rendering makes button not appear
+**** DONE Transferred children do not have questions in screenings, and going to the screening shows nothing
+CLOSED: [2025-10-22 Wed 18:56]
+*** AddChildModal
+**** DONE Add children dropdown text has bottom cut off  :ui:bug: 
+CLOSED: [2025-10-26 Sun 19:00]
+**** DONE Icon choice selection title overlaps the dropdown trigger :ui:bug:
+CLOSED: [2025-10-26 Sun 19:00]
+**** DONE Make ethnicity appear before race and in all other displays
+CLOSED: [2025-10-20 Mon 22:44]
+**** DONE Delete non-hispanic after the race name for black and white
+CLOSED: [2025-10-20 Mon 22:44]
+**** TODO Add message on birth date that says the day is not saved, only month and year :ui:feature:
+**** DONE Adding child does not add to table, api does not fail
+CLOSED: [2025-10-18 Sat 13:08]
+        - Because table used children route, not child-periods route and then add child did not create a child-period
+**** DONE Refactor for reusability and edit mode
+CLOSED: [2025-10-22 Wed 19:05]
+*** FERPA Compliancy page
+**** DONE Make prettier
+CLOSED: [2025-10-27 Mon 21:54]
+**** DONE Add more info
+CLOSED: [2025-10-27 Mon 21:54]
+*** Screening page
+**** WAIT Buttons section is scrolling slightly
+**** WAIT Flashing page when clicking responses
+*** Individual Report
+**** DONE If name is missing, specify as such instead of blank, same for age and gender
+CLOSED: [2025-10-20 Mon 19:56]
+**** DONE Progress bar at screening 1 is slightly behind the dot
+CLOSED: [2025-10-20 Mon 20:00]
+**** DONE To bottom of development scores, add legend for thresholds
+CLOSED: [2025-10-20 Mon 20:06]
+**** DONE [#B] Make strengths and needs indicator use ALL questions instead of just social
+CLOSED: [2025-10-20 Mon 19:54]
+**** DONE [#B] Make strengths and needs card use n=5
+CLOSED: [2025-10-20 Mon 19:54]
+**** DONE Add "Further assessment needed" if risk is moderate or high, include message for parents. Modal
+CLOSED: [2025-10-20 Mon 20:11]
+        - This can go in the development scores card below the thresholds, make it pop
+**** DONE Need team to make further assessment needed logic. What does that mean
+CLOSED: [2025-10-25 Sat 12:35]
+*** Other
+**** DONE [#B] Implement spanish localization :feature:
+CLOSED: [2025-10-26 Sun 19:00]
+*** Date Management
+**** DONE [#B] Use school year or calendar year notation (create teacher uses calendar year notation currently, so does seed data)
+CLOSED: [2025-10-20 Mon 19:21]
+*** API
+**** DONE /api/screening-periods/route.ts/:51 ~period_number: 1~ make this automatically detect period number
+CLOSED: [2025-10-20 Mon 19:21]
+- Also moved this route to api/child-periods/previous because this did not return screening period related stuff
+**** DONE api/screening-periods/create-if-null.ts work on this
+CLOSED: [2025-10-20 Mon 19:31]
+*** Broken Windows
+**** DONE Remove unused components
+CLOSED: [2025-10-22 Wed 19:05]
+**** TODO Stop redeclaring GetCurrentPeriod in various routes
+**** TODO Make any queryParams use Zod
+**** TODO Typed routes for API (stupid bug with child-periods fetch string, strings are stupid)
+*** Nav
+**** TODO Redo navbar mobile :ui:
+*** Deployment
+**** DONE Bilingual language student :ui:
+CLOSED: [2025-10-26 Sun 13:49]
+**** DONE No thresholds yet , just use numbers
+CLOSED: [2025-10-24 Fri 17:42]
+**** TODO For risk scoes use percentage for category risk score out of total risk score :ui:
+**** DONE Rename overall risk Overall Score
+CLOSED: [2025-10-24 Fri 17:42]
+**** DONE No "Risk" anywhere, change to "Needs"
+CLOSED: [2025-10-24 Fri 17:42]
+**** DONE Remove race card from ChildDetails
+CLOSED: [2025-10-24 Fri 17:42]
+**** DONE Change "Upcoming Screening Due Date" to "Suggested" :ui:
+CLOSED: [2025-10-26 Sun 19:01]
+**** DONE Total Students Number is too low
+CLOSED: [2025-10-24 Fri 17:42]
+**** DONE Home page completed screenings progress and card not working set to 0 currently
+CLOSED: [2025-10-24 Fri 17:42]
+**** DONE Edit child is saving Day of month :bug:
+CLOSED: [2025-10-26 Sun 13:41]
+**** DONE Disability is saved as null not false if left blank in edit :bug:
+CLOSED: [2025-10-26 Sun 13:41]
+**** DONE Language is being saved as null in edit
+CLOSED: [2025-10-24 Fri 18:42]
+**** DONE Gender is not converted to lowercase when saved after edit (also do for all other strings)
+CLOSED: [2025-10-24 Fri 18:42]
+**** TODO Make integration test that checks each route and ensures that will return unauthorized or load unauthorized HTML if no session
+**** DONE Disable "Further Assessment Needed" button for now
+CLOSED: [2025-10-24 Fri 17:42]
+**** CANCELLED ~fetchChildScreenings~ in ~/pages/children/data/fetch.ts~ is getting ALL screenings for child but it should be only for this year (query param or different route?)
+CLOSED: [2025-10-24 Fri 18:08]
+- Intended behavior
+**** DONE Set ~isTesting~ to false on home page :deploy:
+CLOSED: [2025-10-26 Sun 14:30]
+**** DONE Github Actions ~prisma migrate deploy~ :deploy:
+CLOSED: [2025-10-27 Mon 21:53]
+**** DONE Supabase retroactively apply screening periods, child periods, and teacher info :deploy:
+CLOSED: [2025-10-27 Mon 21:53]
+   - Create old screening period
+   - Create child periods for each child in previous screening period
+   - Set all screenings where screening_period_id == null to screening period for previous period
+#+begin_src sql
+-- Create Period 0 (past period) for all teachers - INACTIVE
+INSERT INTO screening_periods (teacher_id, name, school_year, period_number, start_date, end_date, is_active, created_at, updated_at)
+SELECT 
+    t.id AS teacher_id,
+    'Period 0' AS name,
+    2024 AS school_year,
+    0 AS period_number,
+    '2024-12-01'::date AS start_date,
+    '2025-10-01'::date AS end_date,
+    false AS is_active,
+    NOW() AS created_at,
+    NOW() AS updated_at
+FROM teachers t
+ON CONFLICT (teacher_id, school_year, period_number) DO NOTHING;
+
+-- Create Period 1 (current period) for all teachers - ACTIVE
+INSERT INTO screening_periods (teacher_id, name, school_year, period_number, start_date, end_date, is_active, created_at, updated_at)
+SELECT 
+    t.id AS teacher_id,
+    'Period 1' AS name,
+    2025 AS school_year,
+    1 AS period_number,
+    '2025-10-02'::date AS start_date,
+    '2025-12-01'::date AS end_date,
+    true AS is_active,
+    NOW() AS created_at,
+    NOW() AS updated_at
+FROM teachers t
+ON CONFLICT (teacher_id, school_year, period_number) DO NOTHING;
+
+-- Assign all existing children to Period 0 (inactive) for their respective teachers
+INSERT INTO child_periods (child_id, screening_period_id, is_active, enrolled_at, created_at, updated_at)
+SELECT 
+    c.id AS child_id,
+    sp.id AS screening_period_id,
+    false AS is_active,
+    '2024-12-01 00:00:00'::timestamp AS enrolled_at,
+    NOW() AS created_at,
+    NOW() AS updated_at
+FROM children c
+JOIN screening_periods sp ON sp.teacher_id = c.teacher_id 
+    AND sp.school_year = 2024 
+    AND sp.period_number = 0
+ON CONFLICT (child_id, screening_period_id) DO NOTHING;
+#+end_src
+**** TODO Make swipe only work if all items are answered or disable swipe entirely :bug:
+**** DONE Make error message if try to proceed before completing all questions on page :feature:
+CLOSED: [2025-10-26 Sun 19:01]
+**** DONE On first child add if no existing children, screening buttons inifinite load
+CLOSED: [2025-10-24 Fri 18:08]
+**** DONE Stupid logout bug not taking you to login page after logging you out UGH
+CLOSED: [2025-10-24 Fri 18:42]
+**** DONE Fix middleware
+CLOSED: [2025-10-24 Fri 18:42]
+**** DONE Deploy by Sunday :deploy:
+CLOSED: [2025-10-27 Mon 21:53] DEADLINE: <2025-10-26 Sun>
+** 1.2.2 - 1.2.3
+*** DONE Transfer students for new screening periods
+CLOSED: [2025-10-06 Mon 17:43]
+*** DONE Make children page display child-period children for current period
+CLOSED: [2025-10-08 Wed 11:31]
+*** DONE Add "do not show again" option to modal
+CLOSED: [2025-10-08 Wed 11:19]
+*** DONE Fix text spacing on all cards
+CLOSED: [2025-10-16 Thu 17:09]
+*** DONE Make sure screeningContext uses current period instead of period 3 for testing
+CLOSED: [2025-10-08 Wed 11:48]
+*** DONE Remove register and forgot password buttons
+CLOSED: [2025-10-16 Thu 17:09]
+*** DONE Update staging .env
+CLOSED: [2025-10-08 Wed 11:47]
+*** DONE Fix transfer modal scrolling
+CLOSED: [2025-10-09 Thu 10:20]
+*** DONE Deploy to staging
+CLOSED: [2025-10-08 Wed 14:46]
+*** DONE Create initial screening period, create child periods for each child, set to that old period, make inactive
+CLOSED: [2025-10-16 Thu 17:09]
+*** DONE Home page completed screenings for current period only
+CLOSED: [2025-10-16 Thu 17:38]
+*** DONE Home page total students current period only
+CLOSED: [2025-10-16 Thu 17:38]
+*** DONE Home page make recent screenings current period only
+CLOSED: [2025-10-16 Thu 17:38]
+** 1.2.0
+*** DONE put screening period in navbar
+CLOSED: [2025-09-03 Wed 11:31] DEADLINE: <2025-08-30>
+*** DONE Screenshots of "Add Children" sections
+CLOSED: [2025-09-18 Thu 14:09] DEADLINE: <2025-08-30 Sat>
+*** DONE New screenings system
+CLOSED: [2025-09-08 Mon 15:10] DEADLINE: <2025-09-02 Tue>
+*** DONE create screening periods if date exceeds previous year in august
+   CLOSED: [2025-09-08 Mon 15:11] DEADLINE: <2025-09-05 Fri>
+   how do i do this?
+   i think we should manually create the screening periods for now
+
+   I made the due date three months from start because if we did four months from start, and we can assume we will usually start in august, we will eventually incur a drift where the last period ends even past august and so on. Three months gives us a buffer of time to start it whenever
+
+*** DONE test migrations with staging db
+CLOSED: [2025-10-02 Thu 13:06]
+- Needs to have sql to add screening period for last period and add child periods for all children
+*** WAIT new year detected, go to children roster menu
+   DEADLINE: <2025-09-12>
+*** WAIT admin dashboard
+   DEADLINE: <2025-09-17>
+
+*** DONE children/page:236 fetch correct year (hardcoded 2025)
+CLOSED: [2025-09-10 Wed 15:53]
+*** DONE fix line height in add child modal
+   CLOSED: [2025-09-22 Mon 17:42] DEADLINE: <2025-09-15>
+
+*** DONE aes256 encryption for child, teacher, question data
+CLOSED: [2025-09-18 Thu 14:09] DEADLINE: <2025-09-10 Wed>
+*** DONE Fix overflow scrolling in child detail cards
+CLOSED: [2025-09-22 Mon 18:16] DEADLINE: <2025-09-10 Wed>
+*** DONE Display children icons
+CLOSED: [2025-09-22 Mon 17:42] DEADLINE: <2025-09-10 Wed>
+*** DONE start report page
+CLOSED: [2025-09-18 Thu 14:09] DEADLINE: <2025-09-10 Wed>
+*** DONE Identify 3 broken windows and fix them
+CLOSED: [2025-09-18 Thu 14:09] DEADLINE: <2025-09-10 Wed>
+
+*** DONE import 'server-only'
+   CLOSED: [2025-09-22 Mon 16:30] DEADLINE: <2025-09-10>
+
+*** DONE test development card with activeperiod set to period 2
+   CLOSED: [2025-09-24 Wed 08:21] DEADLINE: <2025-09-13>
+*** DONE Logout button
+CLOSED: [2025-09-24 Wed 14:52]
+*** DONE Change home page Go To Screenings to "Go to Roster"
+CLOSED: [2025-09-24 Wed 14:52]
+*** WAIT AssessmentNeededCard need to actually check if assessment is needed or not
+*** WAIT no component api fetching, make context instead
+   DEADLINE: <2025-09-25>
+*** WAIT make each route export it's own Prisma Payload type to keep up DRY
+*** DONE research better api design
+   CLOSED: [2025-09-18 Thu 14:09] DEADLINE: <2025-09-13>
+   - using queryparams
+*** DONE Differentiate Race and Ethnicity
+CLOSED: [2025-09-22 Mon 17:11] DEADLINE: <2025-09-18 Thu>
+- Hispanic, Non-hispanic, arabic
+- Race options
+*** DONE Remove 'request data deletion' from dropdown
+CLOSED: [2025-09-22 Mon 16:02] DEADLINE: <2025-09-18 Thu>
+*** DONE Add FERPA compliance page
+CLOSED: [2025-09-22 Mon 16:30]
+*** DONE Teacher demographics and other metadata
+CLOSED: [2025-10-02 Thu 13:06] DEADLINE: <2025-09-19 Fri>
+*** DONE Upon adding child, add child-period, add screening for current screening period
+CLOSED: [2025-09-30 Tue 15:32]
+*** WAIT Display best and worst question for each child in ChildDetails
+*** WAIT add zod sani for children POST
+   DEADLINE: <2025-09-24>
+*** WAIT [#A] Classroom dashboard
+DEADLINE: <2025-09-22 Mon>
+**** DONE Make low vs high risk use median of risk questions for classroom
+CLOSED: [2025-09-21 Sun 11:14]
+**** TODO Common learning targets across classroom (items having lowest total score)
+*** DONE Assert child demographics is solid
+CLOSED: [2025-10-02 Thu 13:07] DEADLINE: <2025-09-22 Mon>
+*** WAIT Unit testing PLEASE
+DEADLINE: <2025-09-23 Tue>
+*** DONE Research prisma schema migrations for compatible updates
+CLOSED: [2025-10-02 Thu 13:07] DEADLINE: <2025-09-23 Tue>
+*** DONE Clone ibegin db to staging db
+CLOSED: [2025-10-02 Thu 13:07] DEADLINE: <2025-09-26 Fri>
+
+** Future
+*** TODO Class report :feature:
+*** TODO Skeletons for home page :ui:bug:
+*** TODO Homebrew or Umami user analytics :feature:deploy:
+*** TODO Risk analytics :feature:
+*** TODO Home page data highlights :feature:
+*** TODO Standalone user registration :feature:
+ + [ ] Email verification
+ + [ ] MFA
+
+
+
+
+*** TODO User feedback :feature:
+*** TODO Mobile UI :moble:
+*** TODO Create full test suites since we are at a stable version :test:
+*** TODO Put on RAISE-Lab Supabase account :database:deploy:
+ + Research audits, backups, compliancy for pro account
+*** TODO Continue removing useEffects :refactor:
+*** TODO Screening periods relative to teacher's first screening start :feature:
+*** TODO More advanced transfer page :feature:
+ + Lets you select which previous periods to transfer from so you can get children from way earlier
+
+*** TODO Contact us / technical help / bug reports :feature:
+*** TODO Admin dashboard and tools [0%] :feature:
+ - [ ] Student count
+ - [ ] Teacher count
+ - [ ] Total screening count and completion
+ - [ ] Focus on teacher [0%]
+   - [ ] Total screening count and completion
+   - [ ] View screening period start and end dates
+   - [ ] Edit teacher
+   - [ ] Export child and/or screening data
+     - Should be in either full form for reproducability or short form for analysis
+ - [ ] Focus on child
+   - [ ] Name, age, id, teacher info, site name
+   - [ ] Current screening progress
+   - [ ] Edit child
+   - [ ] Export screening info 
+     - Should be in either full form for reproducability or short form for analysis
+ - [ ] Register teachers
+ - [ ] Bulk upload data
+ - [ ] Export data [0%]
+   - [ ] Data from screening periods separately or together
+   - [ ] Data from English or Spanish teachers
+ - [ ] View suspicious audit log data
+ - [ ] View recent audit log

@@ -16,6 +16,10 @@
 
 (server-start)
 
+(setq gc-cons-threshold 1073741824) (run-with-idle-timer 5 t (lambda () (garbage-collect)))
+(setq read-process-output-max (* 1024 1024))
+(setq lsp-log-io nil)
+
 (defvar bootstrap-version)
 
 (let ((bootstrap-file
@@ -175,7 +179,7 @@
              (event
               (if defining-kbd-macro
                   (read-event nil nil)
-		(read-event nil nil meow-two-char-escape-delay))))
+								(read-event nil nil meow-two-char-escape-delay))))
         (when event
           (if (and (characterp event) (= event second-char))
               (progn
@@ -189,7 +193,7 @@
   (meow--two-char-exit-insert-state meow-two-char-escape-sequence))
 
 (define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
-	    #'meow-two-char-exit-insert-state)
+						#'meow-two-char-exit-insert-state)
 ;; end j k 
 
 
@@ -201,7 +205,7 @@
   (which-key-mode))
 
 (add-to-list 'default-frame-alist
-             '(font . "AporeticSansMonoNerdFont-10"))
+             '(font . "FantasqueSansM Nerd Font-10"))
 
 (let ((mono-spaced-font "Monospace")
       (proportionately-spaced-font "Sans"))
@@ -341,12 +345,12 @@
   ;; https://github.com/minad/vertico/wiki#prefix-current-candidate-with-arrow
   (advice-add #'vertico--format-candidate :around
               (lambda (orig cand prefix suffix index _start)
-		(setq cand (funcall orig cand prefix suffix index _start))
-		(concat
-		 (if (= vertico--index index)
+								(setq cand (funcall orig cand prefix suffix index _start))
+								(concat
+								 (if (= vertico--index index)
                      (propertize "» " 'face 'vertico-current)
                    "  ")
-		 cand)))
+								 cand)))
   )
 
 (use-package orderless
@@ -409,8 +413,8 @@
          ;;  Switch to another buffer, or bookmarked file, or recently
          ;;  opened file.
          ("C-c C-s C-b" . consult-buffer)
-	 ("C-c C-s C-r" . consult-recent-file)
-	 ("C-c C-s C-i" . consult-imenu)))
+				 ("C-c C-s C-r" . consult-recent-file)
+				 ("C-c C-s C-i" . consult-imenu)))
 
 ;; The `embark' package lets you target the thing or context at point
 ;; and select an action to perform on it.  Use the `embark-act'
@@ -454,6 +458,7 @@
           ("C-x C-q" . wgrep-change-to-wgrep-mode)
           ("C-c C-c" . wgrep-finish-edit)))
 
+;; Icons
 (use-package all-the-icons
   :if (display-graphic-p))
 
@@ -463,16 +468,32 @@
   :init
   (all-the-icons-completion-mode))
 
+(use-package nerd-icons
+  :straight (nerd-icons
+             :type git
+             :host github
+             :repo "rainstormstudio/nerd-icons.el"
+             :files (:defaults "data"))
+  :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
 
+;; Direnv
 (use-package direnv
   :config
   (direnv-mode))
+
 
 (use-package flymake-jsts
   :straight '(flymake-jsts :type git :host github :repo "orzechowskid/flymake-jsts" :branch "main"))
 
 (use-package tsx-mode
   :straight '(tsx-mode :type git :host github :repo "orzechowskid/tsx-mode.el" :branch "emacs30"))
+
+(use-package csv-mode)
 
 (setq-default tab-width 2)
 
@@ -487,7 +508,7 @@
   (global-corfu-mode)
   :custom
   (corfu-auto t)                 ;; Enable auto completion
-  (corfu-auto-delay 0.1)         ;; Small delay
+  (corfu-auto-delay 0.2)         ;; Small delay
   (corfu-auto-prefix 3)          ;; Complete after 2 chars
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-preselect 'prompt))     ;; Preselect the prompto 
@@ -528,6 +549,22 @@
 
 ;; LSP
 (use-package lsp-mode
+	:config
+  ;; Define the face
+  (defface lsp-flycheck-info-unnecessary
+    '((t :inherit shadow :underline t))
+    "Face for unnecessary code."
+    :group 'lsp-mode)
+  
+  ;; Define the flycheck error level
+  (with-eval-after-load 'flycheck
+    (flycheck-define-error-level 'lsp-flycheck-info-unnecessary
+      :severity 'info
+      :compilation-level 0
+      :overlay-category 'flycheck-info-overlay
+      :fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
+      :fringe-face 'flycheck-fringe-info
+      :error-list-face 'flycheck-error-list-info))
   :init
   (setq lsp-keymap-prefix "C-c l")
   :hook ((nix-mode . lsp-deferred)
@@ -537,11 +574,15 @@
          (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp
   :custom
+	(lsp-idle-delay 0.8
+									lsp-semantic-tokens nil
+									lsp-log-io nil)
+  ;; lsp-completion-provider :none)
   ;; This is the key part - use corfu instead of lsp-ui
   ;; (lsp-completion-provider :none) ;; we use Corfu!
-	(lsp-idle-delay 0.1)
-	(lsp-completion-show-detail t)
-(lsp-completion-show-kind t)
+	;; 	(lsp-idle-delay 0.1)
+	;; 	(lsp-completion-show-detail t)
+	;; (lsp-completion-show-kind t)
 	) 
 
 (with-eval-after-load 'lsp-mode
@@ -562,7 +603,146 @@
     :server-id 'ts-ls
     :major-modes '(typescript-mode typescript-ts-mode tsx-ts-mode js-mode js-ts-mode))))
 
-(use-package flycheck)
+
+
+
+;; Treemacs
+(global-unset-key (kbd "C-t")) ;; Removing C-t for transpose-char because i dont ever use that and i want treemacs to have it
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-buffer-name-function            #'treemacs-default-buffer-name
+          treemacs-buffer-name-prefix              " *Treemacs-Buffer-"
+          treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-files-by-mouse-dragging    t
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-t 1"   . treemacs-delete-other-windows)
+        ("C-t t"   . treemacs)
+        ("C-t d"   . treemacs-select-directory)
+        ("C-t b"   . treemacs-bookmark)
+        ("C-t f f" . treemacs-find-file)
+        ("C-t f t" . treemacs-find-tag)
+        ("C-t f m" . treemacs-move-file)
+        ("C-t f D" . treemacs-delete-file)
+        ("C-t c f" . treemacs-create-file)
+        ("C-t c d" . treemacs-create-dir)
+        ("C-t c w" . treemacs-create-workspace)
+        ("C-t R" . treemacs-rename-file)
+        ("C-t r" . treemacs-refresh))
+	)
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  :ensure t
+  :config (treemacs-set-scope-type 'Perspectives))
+
+(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+  :after (treemacs)
+  :ensure t
+  :config (treemacs-set-scope-type 'Tabs))
+
+(use-package treemacs-all-the-icons
+  :ensure t
+  :after (treemacs all-the-icons)
+  :config
+  (treemacs-load-theme "all-the-icons"))
+
+;; (treemacs-start-on-boot)
+
+(use-package flycheck
+	:config
+	(setq flycheck-check-syntax-automatically '(save mode-enabled)
+				flycheck-display-errors-delay 0.5))
 
 (use-package lsp-ui)
 
@@ -589,7 +769,7 @@
   :bind (("C-x C-b" . persp-list-buffers)
          ("C-<tab> b" . persp-switch-to-buffer*)
          ("C-<tab> k" . persp-kill-buffer*)
-	 ("C-<tab> <tab>" . persp-switch))
+				 ("C-<tab> <tab>" . persp-switch))
   :custom
   (persp-mode-prefix-key (kbd "C-<tab>"))
   :init
@@ -664,7 +844,7 @@
 (use-package deft
   :config (setq deft-directory "~/org/deft/"
                 deft-extensions '("md" "org")
- 		deft-recursive t))
+ 								deft-recursive t))
 
 
 (defun my/consult-org-files ()
@@ -690,7 +870,7 @@
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook
-		dashboard-mode-hook))
+								dashboard-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 
