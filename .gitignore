@@ -4,3 +4,7 @@ elpa
 auto-save-list
 backups/
 straight/
+history
+recentf
+.lsp-session
+.cache/

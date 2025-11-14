@@ -1,1 +1,0 @@
-#s(lsp-session ("/home/gabriel/nixos" "/home/gabriel/repos/i-begin") nil #s(hash-table test equal) #s(hash-table test equal) #s(hash-table test equal))
