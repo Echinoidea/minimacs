@@ -1,0 +1,1 @@
+("~/nixos/" "~/.emacs.d/" "~/repos/i-begin/" "~/.config/" "~/.config/eww/" "~/dmenu-scripts/")

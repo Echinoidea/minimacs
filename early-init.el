@@ -3,11 +3,11 @@
 (setq lsp-use-plists t)
 (setenv "LSP_USE_PLISTS" "true")
 
-(require 'chemacs
-         (expand-file-name "chemacs.el"
-                           (file-name-directory
-                            (file-truename load-file-name))))
-(chemacs-load-user-early-init)
+;; (require 'chemacs
+;;          (expand-file-name "chemacs.el"
+;;                            (file-name-directory
+;;                             (file-truename load-file-name))))
+;; (chemacs-load-user-early-init)
 
 (setq package-enable-at-startup nil)
 

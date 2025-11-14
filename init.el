@@ -1,45 +1,18 @@
-;; init.el --- -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; byte-compile-warnings: (not free-vars unresolved) -*-
 
 ;;; Commentary:
 ;; Custom Emacs config
 
 ;;; Code:
 
-;; Chemacs, disable this when youre ready
-;;(require 'chemacs
-;;         (expand-file-name "chemacs.el"
-;;                           (file-name-directory
-;;                            (file-truename load-file-name))))
-;;(chemacs-load-user-init)
-
-;; (setq lsp-use-plists t)
-
-(server-start)
-
-;; (setq gc-cons-threshold 1073741824) (run-with-idle-timer 5 t (lambda () (garbage-collect)))
-;; (setq read-process-output-max (* 1024 1024))
-
 (setq read-process-output-max (* 10 1024 1024)) ;; 10mb
 (setq gc-cons-threshold 200000000)
 
 (setq lsp-log-io nil)
 
-(defvar bootstrap-version)
 
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-sync
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+(load (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory) nil 'nomessage)
+
 
 ;; Install use-package
 (straight-use-package 'use-package)
@@ -47,23 +20,32 @@
 ;; Configure use-package to use straight.el by default
 (setq straight-use-package-by-default t)
 
+(use-package xclip
+							:config
+							(setq xclip-program "wl-copy")
+							(setq xclip-select-enable-clipboard t)
+							(setq xclip-mode t)
+							(setq xclip-method (quote wl-copy))
+							)
+
+;; This doesn't work when emacs daemon is run through systemd because wayland is not loaded yet
 ;; Clipboard for Wayland
-(setq wl-copy-process nil)
-(defun wl-copy (text)
-  (setq wl-copy-process (make-process :name "wl-copy"
-                                      :buffer nil
-                                      :command '("wl-copy" "-f" "-n")
-                                      :connection-type 'pipe))
-  (process-send-string wl-copy-process text)
-  (process-send-eof wl-copy-process))
+;; (setq wl-copy-process nil)
+;; (defun wl-copy (text)
+;;   (setq wl-copy-process (make-process :name "wl-copy"
+;;                                       :buffer nil
+;;                                       :command '("wl-copy" "-f" "-n")
+;;                                       :connection-type 'pipe))
+;;   (process-send-string wl-copy-process text)
+;;   (process-send-eof wl-copy-process))
 
-(defun wl-paste ()
-  (if (and wl-copy-process (process-live-p wl-copy-process))
-      nil ; Skip paste while we're the one who owns the clipboard
-    (shell-command-to-string "wl-paste -n | tr -d \r")))
+;; (defun wl-paste ()
+;;   (if (and wl-copy-process (process-live-p wl-copy-process))
+;;       nil ; Skip paste while we're the one who owns the clipboard
+;;     (shell-command-to-string "wl-paste -n | tr -d \r")))
 
-(setq interprogram-cut-function 'wl-copy)
-(setq interprogram-paste-function 'wl-paste)
+;; (setq interprogram-cut-function 'wl-copy)
+;; (setq interprogram-paste-function 'wl-paste)
 
 ;; Use xclip for clipboard integration
 ;;(setq interprogram-cut-function
@@ -83,7 +65,7 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
-;; MEOW 
+;; MEOW
 (use-package meow
   :config
   (defun meow-setup ()
@@ -193,16 +175,30 @@
             (push event unread-command-events)))))))
 
 (defun meow-two-char-exit-insert-state ()
+	"Exit insert mode with two-key sequence."
   (interactive)
   (meow--two-char-exit-insert-state meow-two-char-escape-sequence))
 
 (define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
 						#'meow-two-char-exit-insert-state)
-;; end j k 
+;; end j k
 
 
 (keymap-global-set "C-h C-t" 'consult-theme)
 
+
+(use-package vterm)
+(use-package meow-vterm
+	:straight '(meow-vterm :type git :host github :repo "accelbread/meow-vterm" :branch "master")
+	:ensure t)
+
+(meow-vterm-enable)
+
+(defun my/vterm-new ()
+  "Create a new vterm buffer with a unique name."
+  (interactive)
+  (let ((vterm-buffer-name (generate-new-buffer-name "*vterm*")))
+    (vterm)))
 
 (use-package which-key
   :config
@@ -211,12 +207,11 @@
 (add-to-list 'default-frame-alist
              '(font . "FantasqueSansM Nerd Font-10"))
 
-(let ((mono-spaced-font "Monospace")
+(let ((mono-spaced-font "FantasqueSansM Nerd Font")  ; Use your actual font here!
       (proportionately-spaced-font "Sans"))
   (set-face-attribute 'default nil :family mono-spaced-font :height 100)
   (set-face-attribute 'fixed-pitch nil :family mono-spaced-font :height 1.0)
   (set-face-attribute 'variable-pitch nil :family proportionately-spaced-font :height 1.0))
-
 
 ;; DOOM THEMES
 (use-package doom-themes
@@ -257,13 +252,25 @@
 
 ;; DASHBOARD
 (use-package dashboard
-  :demand t  ;; Force load immediately
+  :demand t
   :init
-  (setq dashboard-banner-logo-title "Emacs")
+  (setq dashboard-banner-logo-title "Minimacs")
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
   (setq dashboard-vertically-center-content t)
   (setq dashboard-show-shortcuts t)
+  (setq dashboard-items '((recents   . 5)
+                          (bookmarks . 5)
+                          (projects  . 5)
+                          (agenda    . 5)
+                          (registers . 5)))
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-projects-switch-function 'counsel-projectile-switch-project-by-name)
+  (setq dashboard-item-shortcuts '((recents   . "r")
+                                    (bookmarks . "m")
+                                    (projects  . "p")
+                                    (agenda    . "a")
+                                    (registers . "e")))
   :config
   (dashboard-setup-startup-hook))
 
@@ -271,6 +278,23 @@
 (add-hook 'after-init-hook 
           (lambda ()
             (dashboard-refresh-buffer)))
+
+
+(defun my/new-frame-with-perspective ()
+  "Create a new perspective and show dashboard when opening a new frame."
+  ;; Create perspective with timestamp or let user name it later
+  (persp-switch "dashboard")
+  (dashboard-refresh-buffer))
+
+;; Hook into new frame creation
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (with-selected-frame frame
+              (my/new-frame-with-perspective))))
+
+;; Also handle emacsclient with no frame (terminal)
+(add-hook 'server-after-make-frame-hook
+          #'my/new-frame-with-perspective)
 
 (use-package spacious-padding)
 (spacious-padding-mode)
@@ -295,13 +319,6 @@
  '("b b" . consult-buffer)
  )
 
-;; PROJECTILE
-(use-package projectile
-  :ensure t
-  :config
-  (projectile-mode +1))
-
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
 (use-package page-break-lines)
 (global-page-break-lines-mode)
@@ -744,43 +761,6 @@
   :after lsp-mode)
 
 
-;; (use-package lsp-mode
-;; 	:config
-;;   ;; Define the face
-;;   (defface lsp-flycheck-info-unnecessary
-;;     '((t :inherit shadow :underline t))
-;;     "Face for unnecessary code."
-;;     :group 'lsp-mode)
-
-;;   ;; Define the flycheck error level
-;;   (with-eval-after-load 'flycheck
-;;     (flycheck-define-error-level 'lsp-flycheck-info-unnecessary
-;;       :severity 'info
-;;       :compilation-level 0
-;;       :overlay-category 'flycheck-info-overlay
-;;       :fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-;;       :fringe-face 'flycheck-fringe-info
-;;       :error-list-face 'flycheck-error-list-info))
-;;   :init
-;;   (setq lsp-keymap-prefix "C-c l")
-;;   :hook ((nix-mode . lsp-deferred)
-;;          (tuareg-mode . lsp-deferred)
-;;          (tsx-ts-mode . lsp-deferred)
-;;          (typescript-ts-mode . lsp-deferred)
-;;          (lsp-mode . lsp-enable-which-key-integration))
-;;   :commands lsp
-;;   :custom
-;; 	(lsp-idle-delay 0.8
-;; 									lsp-semantic-tokens nil
-;; 									lsp-log-io nil)
-;;   ;; lsp-completion-provider :none)
-;;   ;; This is the key part - use corfu instead of lsp-ui
-;;   ;; (lsp-completion-provider :none) ;; we use Corfu!
-;; 	;; 	(lsp-idle-delay 0.1)
-;; 	;; 	(lsp-completion-show-detail t)
-;; 	;; (lsp-completion-show-kind t)
-;; 	) 
-
 (with-eval-after-load 'lsp-mode
   ;; Tell lsp-mode how to identify these modes
   (add-to-list 'lsp-language-id-configuration '(tsx-ts-mode . "typescriptreact"))
@@ -933,6 +913,13 @@
   :config
   (treemacs-load-theme "all-the-icons"))
 
+
+(use-package diredc)
+
+;; (use-package ranger)
+(use-package dirvish)
+
+
 ;; (treemacs-start-on-boot)
 
 (use-package flycheck
@@ -970,20 +957,46 @@
   :custom
   (persp-mode-prefix-key (kbd "C-<tab>"))
   :init
-  (persp-mode)
-  :config
-  ;; Integrate with projectile
-  (with-eval-after-load "projectile"
-    (setq projectile-switch-project-action #'projectile-dired)))
+  (persp-mode))
+  ;; :config
+  ;; ;; Integrate with projectile
+  ;; (with-eval-after-load "projectile"
+  ;;   (setq projectile-switch-project-action #'projectile-dired)))
 
 ;; Auto-create perspectives for projectile projects
-(add-hook 'projectile-after-switch-project-hook
-          (lambda ()
-            (persp-switch (projectile-project-name))))
+;; (add-hook 'projectile-after-switch-project-hook
+;;           (lambda ()
+;;             (persp-switch (projectile-project-name))))
 
 
+;; Better projectile + perspective integration
+(use-package persp-projectile
+  :after (perspective projectile)
+  :bind (:map projectile-mode-map
+              ("C-c p p" . projectile-persp-switch-project)))
+
+
+;; Add this after your projectile use-package
+(use-package counsel-projectile
+  :ensure t
+  :after (counsel projectile)
+  :config
+  (counsel-projectile-mode 1))
+
+;; PROJECTILE
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-mode +1)
+	(setq projectile-switch-project-action #'projectile-commander)
+	)
+
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+
+	
 (meow-leader-define-key
- '("p p" . projectile-switch-project)
+ '("p p" . projectile-persp-switch-project)
  '("p f" . projectile-find-file))
 
 
@@ -1052,6 +1065,10 @@
 
 (global-set-key (kbd "C-c n f") #'my/consult-org-files)
 
+(add-hook 'org-mode-hook
+      (lambda ()
+        (toggle-truncate-lines nil) ))
+
 ;; Other Appearance
 (use-package rainbow-mode)
 
@@ -1067,7 +1084,9 @@
                 term-mode-hook
                 shell-mode-hook
                 eshell-mode-hook
-								dashboard-mode-hook))
+								dashboard-mode-hook
+								vterm-mode-hook
+								treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 
