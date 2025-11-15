@@ -5,8 +5,9 @@
 
 ;;; Code:
 
+
 (setq read-process-output-max (* 10 1024 1024)) ;; 10mb
-(setq gc-cons-threshold 200000000)
+(setq gc-cons-threshold (* 100 1024 1024)) 
 
 (setq lsp-log-io nil)
 
@@ -19,6 +20,41 @@
 
 ;; Configure use-package to use straight.el by default
 (setq straight-use-package-by-default t)
+
+
+(use-package gcmh
+  :straight (gcmh :type git :host gitlab :repo "koral/gcmh")
+  :config
+  (setq gcmh-idle-delay 5)
+  (setq gcmh-high-cons-threshold (* 100 1024 1024))
+  (gcmh-mode 1))
+
+;; (use-package compile-angel
+;;   :ensure t
+;;   :demand t
+;;   :config
+;;   ;; Set `compile-angel-verbose' to nil to disable compile-angel messages.
+;;   ;; (When set to nil, compile-angel won't show which file is being compiled.)
+;;   (setq compile-angel-verbose t)
+
+;;   ;; Uncomment the line below to compile automatically when an Elisp file is saved
+;;   ;; (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
+
+;;   ;; The following directive prevents compile-angel from compiling your init
+;;   ;; files. If you choose to remove this push to `compile-angel-excluded-files'
+;;   ;; and compile your pre/post-init files, ensure you understand the
+;;   ;; implications and thoroughly test your code. For example, if you're using
+;;   ;; the `use-package' macro, you'll need to explicitly add:
+;;   ;; (eval-when-compile (require 'use-package))
+;;   ;; at the top of your init file.
+;;   (push "/init.el" compile-angel-excluded-files)
+;;   (push "/early-init.el" compile-angel-excluded-files)
+
+;;   ;; A global mode that compiles .el files before they are loaded
+;;   ;; using `load' or `require'.
+;;   (compile-angel-on-load-mode 1))
+
+
 
 (use-package xclip
 							:config
@@ -64,6 +100,9 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+(setq use-dialog-box nil)
+(setq use-file-dialog nil)
+(setq use-short-answers t)
 
 ;; MEOW
 (use-package meow
@@ -207,11 +246,32 @@
 (add-to-list 'default-frame-alist
              '(font . "FantasqueSansM Nerd Font-10"))
 
+
 (let ((mono-spaced-font "FantasqueSansM Nerd Font")  ; Use your actual font here!
       (proportionately-spaced-font "Sans"))
   (set-face-attribute 'default nil :family mono-spaced-font :height 100)
   (set-face-attribute 'fixed-pitch nil :family mono-spaced-font :height 1.0)
   (set-face-attribute 'variable-pitch nil :family proportionately-spaced-font :height 1.0))
+
+
+(use-package default-font-presets
+
+  :commands
+  (default-font-presets-forward
+   default-font-presets-backward
+   default-font-presets-choose
+   default-font-presets-scale-increase
+   default-font-presets-scale-decrease
+   default-font-presets-scale-fit
+   default-font-presets-scale-reset)
+
+  :config
+  (setq default-font-presets-list
+    (list
+      "Maple Mono NF-10:spacing=90"
+      "Fantasque Sans Mono-10"
+      "AporeticSansMonoNerdFont-11")))
+
 
 ;; DOOM THEMES
 (use-package doom-themes
@@ -274,11 +334,12 @@
   :config
   (dashboard-setup-startup-hook))
 
-;; After everything loads, open dashboard
-(add-hook 'after-init-hook 
-          (lambda ()
-            (dashboard-refresh-buffer)))
 
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (when (and (not (minibufferp))
+                       (string= (buffer-name) "*scratch*"))
+              (dashboard-refresh-buffer))))
 
 (defun my/new-frame-with-perspective ()
   "Create a new perspective and show dashboard when opening a new frame."
@@ -290,14 +351,69 @@
 (add-hook 'after-make-frame-functions
           (lambda (frame)
             (with-selected-frame frame
-              (my/new-frame-with-perspective))))
+              ;; Only run if we're in scratch buffer (no --eval was used)
+              (when (string= (buffer-name) "*scratch*")
+                (my/new-frame-with-perspective)))))
 
 ;; Also handle emacsclient with no frame (terminal)
 (add-hook 'server-after-make-frame-hook
-          #'my/new-frame-with-perspective)
+          (lambda ()
+            ;; Only run if we're in scratch buffer (no --eval was used)
+            (when (string= (buffer-name) "*scratch*")
+              (my/new-frame-with-perspective))))
 
 (use-package spacious-padding)
 (spacious-padding-mode)
+
+
+(use-package centaur-tabs
+	:bind ("C-c <tab>" . centaur-tabs-ace-jump)
+  :config
+  (setq centaur-tabs-style "bar"
+        centaur-tabs-set-icons t
+        centaur-tabs-gray-out-icons 'buffer
+        centaur-tabs-set-bar 'left)
+  (centaur-tabs-group-by-projectile-project)
+  (centaur-tabs-mode t))
+
+(use-package zoom
+  :straight t
+  :config
+  ;; Enable zoom-mode
+  (zoom-mode t)
+  
+  ;; Set zoom size (golden ratio example)
+  (setq zoom-size '(0.618 . 0.618))
+  
+  ;; Or use a custom callback
+  ;; (defun my/zoom-size-callback ()
+  ;;   (cond ((> (frame-pixel-width) 1280) '(90 . 0.75))
+  ;;         (t                            '(0.5 . 0.5))))
+  ;; (setq zoom-size 'my/zoom-size-callback)
+  
+  ;; Ignored modes/buffers
+  (setq zoom-ignored-major-modes '(dired-mode markdown-mode which-key-mode))
+  (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*"))
+	(setq zoom-ignored-buffer-name-regexps '("^lsp-ui"))
+(setq zoom-ignore-predicates 
+      '((lambda () 
+          (string-match-p "\\*which-key\\*" (buffer-name)))))
+  ;; Optional: preserve layout when minibuffer is active
+(setq zoom-minibuffer-preserve-layout t))
+
+(defun my/which-key-fix (original window &rest args)
+  ;; only for the which-key window
+  (when (eq (window-buffer window) which-key--buffer)
+    ;; unfix the window size
+    (with-selected-window window
+      (setq window-size-fixed nil))
+    ;; call the original fit-window-to-buffer
+    (apply original window args)
+    ;; fix the window size
+    (with-selected-window window
+      (setq window-size-fixed t))))
+
+(advice-add 'fit-window-to-buffer :around 'my/which-key-fix)
 
 ;; ACE WINODW
 (use-package ace-window
@@ -306,6 +422,11 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 ;; WINDOW STUFF
+
+(use-package solaire-mode
+	:config
+	(solaire-global-mode +1)
+)
 
 (meow-leader-define-key
  '("w h" . windmove-left)
@@ -529,8 +650,8 @@
   :custom
   (corfu-cycle t)                 ; Allows cycling through candidates
   (corfu-auto t)                  ; Enable auto completion
-  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
-  (corfu-auto-delay 0)            ; No delay for completion
+  (corfu-auto-prefix 3)           ; Minimum length of prefix for completion
+  (corfu-auto-delay 0.2)            ; No delay for completion
   (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that numver of seconds
   (corfu-preview-current 'insert) ; insert previewed candidate
   (corfu-preselect 'prompt)
@@ -549,14 +670,7 @@
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode) ; Popup completion info
-  :config
-  (add-hook 'eshell-mode-hook
-            (lambda () (setq-local corfu-quit-at-boundary t
-                                   corfu-quit-no-match t
-                                   corfu-auto nil)
-              (corfu-mode))
-            nil
-            t))
+	)
 
 
 ;; Add extensions
@@ -590,9 +704,12 @@
 (use-package tuareg-mode
   :mode "\\.ml\\'")
 
+
+
 ;; Register .tsx files to use tsx-ts-mode
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-ts-mode))
 
 
 ;; Treesit
@@ -604,6 +721,7 @@
          ("\\.mts\\'" . typescript-ts-mode)
          ("\\.cjs\\'" . typescript-ts-mode)
          ("\\.ts\\'"  . typescript-ts-mode)
+         ("\\.lua\\'"  . lua-ts-mode)
          ("\\.jsx\\'" . tsx-ts-mode)
          ("\\.json\\'" .  json-ts-mode)
          ("\\.Dockerfile\\'" . dockerfile-ts-mode)
@@ -840,7 +958,7 @@
           treemacs-space-between-root-nodes        t
           treemacs-tag-follow-cleanup              t
           treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
+          treemacs-text-scale                      -2
           treemacs-user-mode-line-format           nil
           treemacs-user-header-line-format         nil
           treemacs-wide-toggle-width               70
@@ -914,8 +1032,6 @@
   (treemacs-load-theme "all-the-icons"))
 
 
-(use-package diredc)
-
 ;; (use-package ranger)
 (use-package dirvish)
 
@@ -988,7 +1104,7 @@
   :ensure t
   :config
   (projectile-mode +1)
-	(setq projectile-switch-project-action #'projectile-commander)
+	(setq projectile-switch-project-action #'projectile-find-file)
 	)
 
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -1003,9 +1119,12 @@
 ;; (setq projectile-switch-project-action #'projectile-find-file)
 
 ;; ORG MODE
-(setq org-directory "~/org/")
 
+;; NEW ORG MODE
+;; ORG MODE
+;; (setq org-directory "~/org/")
 
+;; ;; Org agenda files
 ;; (setq org-agenda-files
 ;;       (list "~/org/todo-personal.org"
 ;;             "~/org/todo-work.org"
@@ -1015,59 +1134,304 @@
 ;;             "~/org/todo-gamedev.org"
 ;;             "~/org/todo-programming.org"
 ;;             "~/org/calendar.org"))
-;; 
-
-
-(use-package org-modern
-  :config 
-  (setq
-   ;; Edit settings
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-fold-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
-
-   ;; Org styling, hide markup etc.
-   org-hide-emphasis-markers t
-   org-pretty-entities t
-   org-agenda-tags-column 0
-   org-ellipsis "..."
-   org-modern-star '("✿" "❀" "❁" "❃" "❋" "✾" "✽" "✻")
-   ))
-
-(use-package org-modern-indent
-  :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
-  :config
-  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
-
-(add-hook 'org-mode-hook 'org-indent-mode)
-(add-hook 'org-mode-hook 'org-modern-mode)
-
-;; (add-hook 'org-mode-hook #'org-modern-indent-mode 90)
 
 ;; (setq org-log-done 'time)
 
-;; (add-hook 'org-mode-hook #'org-modern-mode)
+;; (use-package org-modern
+;;   :config 
+;;   (setq
+;;    ;; Edit settings
+;;    org-auto-align-tags nil
+;;    org-tags-column 0
+;;    org-fold-catch-invisible-edits 'show-and-error
+;;    org-special-ctrl-a/e t
+;;    org-insert-heading-respect-content t
+
+;;    ;; Org styling, hide markup etc.
+;;    org-hide-emphasis-markers t
+;;    org-pretty-entities t
+;;    org-agenda-tags-column 0
+;;    org-ellipsis "..."
+;;    org-modern-star '("✿" "❀" "❁" "❃" "❋" "✾" "✽" "✻")))
+
+;; (use-package org-modern-indent
+;;   :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+;;   :config
+;;   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
+
+;; (add-hook 'org-mode-hook 'org-indent-mode)
+;; (add-hook 'org-mode-hook 'org-modern-mode)
 ;; (add-hook 'org-agenda-finalize-hook #'org-modern-agenda)
 
-(use-package deft
-  :config (setq deft-directory "~/org/deft/"
-                deft-extensions '("md" "org")
- 								deft-recursive t))
+;; ;; Org agenda configuration
+;; (with-eval-after-load 'org-agenda
+;;   (setq org-agenda-timegrid-use-ampm t)
 
+;;   ;; Only show one day of the agenda at a time
+;;   (setq org-agenda-span 1
+;;         org-agenda-start-day "+0d")
 
-(defun my/consult-org-files ()
-  "Fuzzy find files in ~/org directory using consult."
-  (interactive)
-  (find-file "~/org")
-  )
+;;   ;; Hide duplicates of the same todo item
+;;   (setq org-agenda-skip-timestamp-if-done t
+;;         org-agenda-skip-deadline-if-done t
+;;         org-agenda-skip-scheduled-if-done t
+;;         org-agenda-skip-scheduled-if-deadline-is-shown t
+;;         org-agenda-skip-timestamp-if-deadline-is-shown t)
 
-(global-set-key (kbd "C-c n f") #'my/consult-org-files)
+;;   ;; Clean time grid
+;;   (setq org-agenda-current-time-string "")
+;;   (setq org-agenda-time-grid
+;;         '((daily today require-timed)
+;;           (800 900 1000 1100 1200 1300 1400 1500 1600 1700 1800)
+;;           "" "----------------"))
 
-(add-hook 'org-mode-hook
-      (lambda ()
-        (toggle-truncate-lines nil) ))
+;;   ;; Category icons - theme colors will be used
+;;   (when (featurep 'all-the-icons)
+;;     (setq org-agenda-category-icon-alist
+;;           `(("School" ,(list (all-the-icons-faicon "graduation-cap" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("IBEGIN" ,(list (all-the-icons-faicon "child" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("MIDAS" ,(list (all-the-icons-faicon "line-chart" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("Work" ,(list (all-the-icons-faicon "suitcase" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("Gamedev" ,(list (all-the-icons-faicon "gamepad" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("Programming" ,(list (all-the-icons-faicon "code" :height 0.9 :v-adjust 0.1)) nil nil :ascent center)
+;;             ("Personal" ,(list (all-the-icons-material "person" :height 0.9 :v-adjust 0.1)) nil nil :ascent center))))
+
+;;   ;; Enhanced prefix format to show icon + category + content
+;;   (setq org-agenda-prefix-format '(
+;;                                    (agenda . "  %i %-12:c %t ")
+;;                                    (todo . "  %i %-12:c ")
+;;                                    (tags . "  %i %-12:c ")
+;;                                    (search . "  %i %-12:c "))))
+
+;; Enhanced font faces for better visual hierarchy
+;; (with-eval-after-load 'org-agenda
+;;   (custom-set-faces
+;;    '(org-agenda-done ((t (:strike-through t))))
+;;    '(org-agenda-date-today ((t (:weight bold :height 1.1 :underline nil))))
+;;    '(org-agenda-date ((t (:weight bold :height 1.05))))
+;;    '(org-agenda-date-weekend ((t (:weight bold :height 1.05 :slant italic))))
+;;    '(org-agenda-structure ((t (:weight bold :height 0.9))))
+;;    '(org-agenda-current-time ((t (:weight bold))))))
+
+;; org-super-agenda
+;; (use-package org-super-agenda
+;;   :config
+;;   (org-super-agenda-mode t)
+;;   (setq org-super-agenda-groups
+;;         '(;; Overdue items - highest priority
+;;           (:name " Overdue"
+;;            :scheduled past
+;;            :order 1
+;;            :face (:weight bold))
+
+;;           ;; Today's scheduled items
+;;           (:name " Today"
+;;            :time-grid t
+;;            :date today
+;;            :scheduled today
+;;            :order 2
+;;            :face (:weight bold))
+
+;;           ;; Work items
+;;           (:name " Work"
+;;            :file-path "work"
+;;            :order 3
+;;            :face (:weight semi-bold))
+
+;;           ;; Personal items
+;;           (:name " Personal"
+;;            :file-path "personal"
+;;            :order 4
+;;            :face (:weight semi-bold))
+
+;;           ;; IBEGIN items
+;;           (:name " IBEGIN"
+;;            :file-path "ibegin"
+;;            :order 5
+;;            :face (:weight semi-bold))
+
+;;           ;; MIDAS items
+;;           (:name " MIDAS"
+;;            :file-path "midas"
+;;            :order 6
+;;            :face (:weight semi-bold))
+
+;;           ;; School items
+;;           (:name " School"
+;;            :file-path "school"
+;;            :order 7
+;;            :face (:weight semi-bold))
+
+;;           ;; Programming items
+;;           (:name " Programming"
+;;            :file-path "programming"
+;;            :order 8
+;;            :face (:weight semi-bold))
+
+;;           ;; Gamedev items
+;;           (:name " Gamedev"
+;;            :file-path "gamedev"
+;;            :order 9
+;;            :face (:weight semi-bold))))
+  
+;;   ;; Additional styling for super-agenda headers
+;;   (custom-set-faces
+;;    '(org-super-agenda-header ((t (:height 1.1 :weight bold :underline nil :extend t))))))
+
+;; ;; Deft configuration
+;; (use-package deft
+;;   :config 
+;;   (setq deft-directory "~/org/deft/"
+;;         deft-extensions '("md" "org")
+;;         deft-recursive t))
+
+;; ;; Custom org functions
+;; (defun my/org-do-demote ()
+;;   "Make `org-do-demote` interactive so it works on selected region."
+;;   (interactive)
+;;   (org-do-demote))
+
+;; (defun my/org-do-promote ()
+;;   "Make `org-do-promote` interactive so it works on selected region."
+;;   (interactive)
+;;   (org-do-promote))
+
+;; ;; Meow leader keybindings for org-mode
+;; (with-eval-after-load 'org
+;;   (define-key org-mode-map (kbd "C-c s >") 'my/org-do-demote)
+;;   (define-key org-mode-map (kbd "C-c s <") 'my/org-do-promote))
+
+;; ;; Quick TODO management functions
+;; (defvar my/todo-categories
+;;   '("personal" "work" "ibegin" "midas" "school" "gamedev" "programming")
+;;   "List of available TODO categories")
+
+;; (defvar my/org-dir "~/org/"
+;;   "Directory where org files are stored")
+
+;; (defun my/get-todo-file (category)
+;;   "Get the full path to the TODO file for CATEGORY."
+;;   (expand-file-name (concat "todo-" category ".org") my/org-dir))
+
+;; (defun my/ensure-todo-file-exists (category)
+;;   "Ensure the TODO file for CATEGORY exists with proper header."
+;;   (let ((file-path (my/get-todo-file category)))
+;;     (unless (file-exists-p file-path)
+;;       (with-temp-file file-path
+;;         (insert (format "#+TITLE: %s TODOs
+;; #+CATEGORY: %s
+;; #+STARTUP: overview
+;; #+TODO: TODO DOING | DONE CANCELLED
+
+;; * Tasks
+;; "
+;;                         (capitalize category)
+;;                         (capitalize category)))))))
+
+;; (defun my/quick-todo (category title &optional deadline effort tags)
+;;   "Create a quick TODO item in CATEGORY with TITLE, optional DEADLINE and EFFORT."
+;;   (interactive)
+;;   (my/ensure-todo-file-exists category)
+;;   (let ((file-path (my/get-todo-file category)))
+;;     (with-current-buffer (find-file-noselect file-path)
+;;       (goto-char (point-max))
+;;       (insert "\n** TODO " title)
+;;       (when deadline
+;;         (insert "\n   DEADLINE: " deadline))
+;;       (when effort
+;;         (insert "\n   :PROPERTIES:\n   :Effort: " effort "\n   :END:"))
+;;       (when tags
+;;         (org-set-tags tags))
+;;       (save-buffer)
+;;       (message "TODO added to %s" category))))
+
+;; (defun my/dmenu-quick-todo ()
+;;   "Create a TODO via completing-read interface."
+;;   (interactive)
+;;   (let* ((category (completing-read "Category: " my/todo-categories))
+;;          (title (read-string "TODO title: "))
+;;          (has-deadline (y-or-n-p "Add deadline? "))
+;;          (deadline (when has-deadline
+;;                      (format "<%s>" (org-read-date))))
+;;          (has-effort (y-or-n-p "Add time estimate? "))
+;;          (effort (when has-effort
+;;                    (read-string "Time estimate (e.g., 2h, 30m): ")))
+;;          (has-tags (y-or-n-p "Add tags? "))
+;;          (tags (when has-tags
+;;                  (split-string (read-string "Tags (space separated): ") " " t))))
+;;     (my/quick-todo category title deadline effort tags)))
+
+;; (defun my/quick-todo-at-point ()
+;;   "Convert current line to a TODO item with prompts."
+;;   (interactive)
+;;   (let* ((current-line (thing-at-point 'line t))
+;;          (title (string-trim current-line))
+;;          (category (completing-read "Category: " my/todo-categories)))
+;;     (kill-whole-line)
+;;     (my/quick-todo category title)))
+
+;; (defun my/mark-todo-done ()
+;;   "Mark current TODO as DONE and add completion timestamp."
+;;   (interactive)
+;;   (when (org-at-heading-p)
+;;     (org-todo 'done)
+;;     (org-add-planning-info 'closed (org-current-effective-time))
+;;     (save-buffer)
+;;     (message "TODO marked as DONE")))
+
+;; (defun my/quick-refile-todo ()
+;;   "Quickly refile current TODO to another category."
+;;   (interactive)
+;;   (when (org-at-heading-p)
+;;     (let* ((category (completing-read "Move to category: " my/todo-categories))
+;;            (target-file (my/get-todo-file category)))
+;;       (my/ensure-todo-file-exists category)
+;;       (org-refile nil nil (list nil target-file nil nil))
+;;       (message "TODO moved to %s" category))))
+
+;; (defun my/org-todo-snippet ()
+;;   "Insert a TODO template with prompts."
+;;   (interactive)
+;;   (let* ((title (read-string "TODO title: "))
+;;          (has-deadline (y-or-n-p "Add deadline? "))
+;;          (deadline-str (if has-deadline
+;;                            (format "\n   DEADLINE: <%s>" (org-read-date))
+;;                          ""))
+;;          (has-effort (y-or-n-p "Add time estimate? "))
+;;          (effort-str (if has-effort
+;;                          (let ((effort (read-string "Time estimate: ")))
+;;                            (format "\n   :PROPERTIES:\n   :Effort: %s\n   :END:" effort))
+;;                        "")))
+;;     (insert (format "** TODO %s%s%s" title deadline-str effort-str))
+;;     (org-set-tags-command)))
+
+;; ;; Frame title with project name
+;; (setq frame-title-format
+;;       '(""
+;;         (:eval
+;;          (let ((project-name (projectile-project-name)))
+;;            (if (string= "-" project-name)
+;;                "%b"
+;;              (format "%b ● %s" (buffer-name) project-name))))))
+
+;; ;; Org mode keybindings with meow leader
+;; (meow-leader-define-key
+;;  '("o a" . org-agenda)
+;;  '("o c" . org-capture)
+;;  '("o t" . my/dmenu-quick-todo)
+;;  '("o d" . my/mark-todo-done)
+;;  '("o r" . my/quick-refile-todo))
+
+;; ;; Global org keybindings
+;; (global-set-key (kbd "C-c a") 'org-agenda)
+;; (global-set-key (kbd "C-c c") 'org-capture)
+;; (global-set-key (kbd "C-c n f") #'my/consult-org-files)
+
+;; ;; Disable line wrapping in org-mode
+;; (add-hook 'org-mode-hook
+;;           (lambda ()
+;;             (toggle-truncate-lines nil)))
+
 
 ;; Other Appearance
 (use-package rainbow-mode)
@@ -1104,45 +1468,6 @@
 ;; Make sure the directory exists
 (unless (file-exists-p "~/.emacs.d/backups")
   (make-directory "~/.emacs.d/backups" t))
-
-;; (setq lsp-use-plists t)
-
-;; (defun lsp-booster--advice-json-parse (old-fn &rest args)
-;;   "Try to parse bytecode instead of json."
-;;   (or
-;;    (when (equal (following-char) ?#)
-;;      (let ((bytecode (read (current-buffer))))
-;;        (when (byte-code-function-p bytecode)
-;;          (funcall bytecode))))
-;;    (apply old-fn args)))
-
-;; (when lsp-use-plists
-;;   (advice-add (if (progn (require 'json)
-;;                          (fboundp 'json-parse-buffer))
-;;                   'json-parse-buffer
-;;                 'json-read)
-;;               :around
-;;               #'lsp-booster--advice-json-parse))
-
-;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-;;   "Prepend emacs-lsp-booster command to lsp CMD."
-;;   (let ((orig-result (funcall old-fn cmd test?)))
-;;     (if (and (not test?)                             ;; for check lsp-server-present?
-;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-;;              lsp-use-plists
-;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
-;;              (executable-find "emacs-lsp-booster"))
-;;         (progn
-;;           (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-;;             (setcar orig-result command-from-exec-path))
-;;           (message "Using emacs-lsp-booster for %s!" orig-result)
-;;           (cons "emacs-lsp-booster" orig-result))
-;;       orig-result)))
-
-;; (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
-
-
-
 
 ;; this must be here to keep the package system happy, normally you do
 ;; `package-initialize' for real in your own init.el

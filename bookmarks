@@ -1,0 +1,17 @@
+;;;; Emacs Bookmark Format Version 1;;;; -*- coding: utf-8-emacs; mode: lisp-data -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("admin register start"
+ (filename . "~/repos/i-begin/app/ui/modals/AdminRegisterModal.tsx")
+ (front-context-string . "  const [languag")
+ (rear-context-string . "tate<number>();\n")
+ (position . 725)
+ (last-modified 26903 38347 259872 866000))
+("buttons"
+ (filename . "~/repos/i-begin/app/[locale]/pages/admin-dashboard/page.tsx")
+ (front-context-string . "e>\n			<Button on")
+ (rear-context-string . "eBody>\n			</Tabl")
+ (position . 1950)
+ (last-modified 26903 38000 255238 72000))
+)
