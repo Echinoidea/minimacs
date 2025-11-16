@@ -1,1 +1,1 @@
-("~/repos/i-begin/" "~/.emacs.d/" "~/.config/" "~/repos/SiltStrider/" "~/nixos/" "~/.config/eww/" "~/dmenu-scripts/")
+("~/.emacs.d/" "~/repos/SiltStrider/" "~/repos/i-begin/" "~/.config/" "~/nixos/" "~/.config/eww/" "~/dmenu-scripts/")

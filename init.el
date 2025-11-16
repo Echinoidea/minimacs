@@ -7,7 +7,7 @@
 
 
 (setq read-process-output-max (* 10 1024 1024)) ;; 10mb
-(setq gc-cons-threshold (* 100 1024 1024)) 
+(setq gc-cons-threshold (* 100 1024 1024))
 
 (setq lsp-log-io nil)
 
@@ -103,6 +103,9 @@
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
 (setq use-short-answers t)
+
+(global-hl-line-mode)
+(global-word-wrap-whitespace-mode)
 
 ;; MEOW
 (use-package meow
@@ -214,12 +217,22 @@
             (push event unread-command-events)))))))
 
 (defun meow-two-char-exit-insert-state ()
-	"Exit insert mode with two-key sequence."
+  "Exit insert mode with two-key sequence."
   (interactive)
-  (meow--two-char-exit-insert-state meow-two-char-escape-sequence))
+  (if (derived-mode-p 'vterm-mode)
+      (self-insert-command 1)  ; Just insert the character normally in vterm
+    (meow--two-char-exit-insert-state meow-two-char-escape-sequence)))
 
 (define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
 						#'meow-two-char-exit-insert-state)
+
+;; Disable j k in vterm
+;; (add-hook 'vterm-mode-hook
+;;           (lambda ()
+;;             (define-key meow-insert-state-keymap 
+;;                         (substring meow-two-char-escape-sequence 0 1) 
+;;                         nil)))
+
 ;; end j k
 
 
@@ -283,7 +296,7 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'doom-gruvbox t)
+  (load-theme 'doom-nord-aurora t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -412,6 +425,8 @@
     ;; fix the window size
     (with-selected-window window
       (setq window-size-fixed t))))
+
+;; TODO: This stopped working for some reason
 
 (advice-add 'fit-window-to-buffer :around 'my/which-key-fix)
 
@@ -649,7 +664,7 @@
   ;; Optional customizations
   :custom
   (corfu-cycle t)                 ; Allows cycling through candidates
-  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto nil)                  ; Enable auto completion
   (corfu-auto-prefix 3)           ; Minimum length of prefix for completion
   (corfu-auto-delay 0.2)            ; No delay for completion
   (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that numver of seconds
@@ -660,16 +675,16 @@
   :bind (:map corfu-map
               ("M-SPC"      . corfu-insert-separator)
               ("TAB"        . corfu-next)
-              ([tab]        . corfu-next)
               ("S-TAB"      . corfu-previous)
-              ([backtab]    . corfu-previous)
               ("S-<return>" . corfu-insert)
               ("RET"        . corfu-insert))
 
   :init
   (global-corfu-mode)
   (corfu-history-mode)
-  (corfu-popupinfo-mode) ; Popup completion info
+  (corfu-popupinfo-mode)
+	:config
+	(keymap-set corfu-mode-map "TAB" 'completion-at-point)
 	)
 
 

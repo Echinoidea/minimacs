@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("admin register start"
+(("test namegen soup"
+ (filename . "~/repos/SiltStrider/scripts/custom/Cooking/spec/namegen_spec.lua")
+ (front-context-string)
+ (rear-context-string . "up\", function()\n")
+ (position . 2659)
+ (last-modified 26904 47960 241961 824000))
+("name gen soup"
+ (filename . "~/repos/SiltStrider/scripts/custom/Cooking/NameGeneration.lua")
+ (front-context-string . "	\"stew\",\n		condi")
+ (rear-context-string . "<base> Stew\n	{\n	")
+ (position . 6344)
+ (last-modified 26904 47926 356486 914000))
+("admin register start"
  (filename . "~/repos/i-begin/app/ui/modals/AdminRegisterModal.tsx")
  (front-context-string . "  const [languag")
  (rear-context-string . "tate<number>();\n")
