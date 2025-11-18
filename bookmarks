@@ -2,28 +2,28 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("test namegen soup"
+(("test salad"
  (filename . "~/repos/SiltStrider/scripts/custom/Cooking/spec/namegen_spec.lua")
- (front-context-string)
- (rear-context-string . "up\", function()\n")
- (position . 2659)
- (last-modified 26904 47960 241961 824000))
-("name gen soup"
+ (front-context-string . ", sload_ear })\n	")
+ (rear-context-string . "llow_wisp_dust, ")
+ (position . 8398)
+ (last-modified 26906 5917 972930 70000))
+("test soup"
+ (filename . "~/repos/SiltStrider/scripts/custom/Cooking/spec/namegen_spec.lua")
+ (front-context-string . ", sload_ear })\n	")
+ (rear-context-string . "({ royal_jelly, ")
+ (position . 5739)
+ (last-modified 26906 4485 288374 728000))
+("context"
  (filename . "~/repos/SiltStrider/scripts/custom/Cooking/NameGeneration.lua")
- (front-context-string . "	\"stew\",\n		condi")
- (rear-context-string . "<base> Stew\n	{\n	")
- (position . 6344)
- (last-modified 26904 47926 356486 914000))
-("admin register start"
- (filename . "~/repos/i-begin/app/ui/modals/AdminRegisterModal.tsx")
- (front-context-string . "  const [languag")
- (rear-context-string . "tate<number>();\n")
- (position . 725)
- (last-modified 26903 38347 259872 866000))
-("buttons"
- (filename . "~/repos/i-begin/app/[locale]/pages/admin-dashboard/page.tsx")
- (front-context-string . "e>\n			<Button on")
- (rear-context-string . "eBody>\n			</Tabl")
- (position . 1950)
- (last-modified 26903 38000 255238 72000))
+ (front-context-string . "	-- Basic info\n	")
+ (rear-context-string . "l context = {}\n\n")
+ (position . 836)
+ (last-modified 26906 3322 839678 964000))
+("salad gen"
+ (filename . "~/repos/SiltStrider/scripts/custom/Cooking/NameGeneration.lua")
+ (front-context-string . "\n\n			return (fla")
+ (rear-context-string . "avorPrefix(r, c)")
+ (position . 9948)
+ (last-modified 26906 3312 795267 480000))
 )

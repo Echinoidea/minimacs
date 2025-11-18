@@ -46,15 +46,15 @@ Can be an integer to determine the exact padding."
   :background-mode 'light
 
   ;; name        default   256       16
-  ((bg         '("#2E3440" nil       nil))
-   (fg         '("#E5E9F0" nil       nil))
+  ((bg         '("#FFFFFF" nil       nil))
+   (fg         '("#000000" nil       nil))
 
    ;; Alternatives for solaire-mode - slightly darker than bg for light theme
-   (bg-alt     (doom-darken '("#2E3440") 0.05))
-   (fg-alt     '("#E5E9F0" nil       nil))
+   (bg-alt     (doom-darken '("#FFFFFF") 0.05))
+   (fg-alt     '("#000000" nil       nil))
 
    ;; Base colors - spectrum from bg to fg (inverted from dark theme)
-   (base0      '("#8FBCBB" nil "white"))
+   (base0      '("#595959" nil "white"))
    (base1      (doom-darken bg 0.02))
    (base2      (doom-darken bg 0.05))
    (base3      (doom-darken bg 0.08))
@@ -62,20 +62,20 @@ Can be an integer to determine the exact padding."
    (base5      (doom-darken bg 0.25))
    (base6      (doom-darken bg 0.35))
    (base7      (doom-darken fg 0.1))
-   (base8      '("#2E3440" nil "black"))
+   (base8      '("#FFFFFF" nil "black"))
 
    (grey       base5)
-   (red        '("#88C0D0" nil "red"))
-   (orange     '("#88C0D0" nil "brightred"))
-   (green      '("#BF616A" nil "green"))
-   (teal       '("#D08770" nil "brightgreen"))
-   (yellow     '("#5E81AC" nil "yellow"))
-   (blue       '("#EBCB8B" nil "brightblue"))
+   (red        '("#A60000" nil "red"))
+   (orange     '("#D00000" nil "brightred"))
+   (green      '("#006800" nil "green"))
+   (teal       '("#005E8B" nil "brightgreen"))
+   (yellow     '("#6F5500" nil "yellow"))
+   (blue       '("#0031A9" nil "brightblue"))
    (dark-blue  (doom-darken blue 0.3))
-   (magenta    '("#A3BE8C" nil "magenta"))
-   (violet     '("#A3BE8C" nil "brightmagenta"))
-   (cyan       '("#D08770" nil "brightcyan"))
-   (dark-cyan  '("#D08770" nil "cyan"))
+   (magenta    '("#721045" nil "magenta"))
+   (violet     '("#DD22DD" nil "brightmagenta"))
+   (cyan       '("#008899" nil "brightcyan"))
+   (dark-cyan  '("#005E8B" nil "cyan"))
 
    ;; Face categories
    (highlight      blue)

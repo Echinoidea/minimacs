@@ -1,1 +1,1 @@
-("~/.emacs.d/" "~/repos/SiltStrider/" "~/repos/i-begin/" "~/.config/" "~/nixos/" "~/.config/eww/" "~/dmenu-scripts/")
+("~/.config/" "~/dmenu-scripts-x/" "~/dmenu-scripts/" "~/repos/i-begin/" "~/.emacs.d/" "~/repos/SiltStrider/" "~/code/quickshell/" "~/nixos/" "~/.config/xmonad/" "~/nixos/config/dwm/" "~/code/nextjs/lis4934/" "~/.config/eww/")
