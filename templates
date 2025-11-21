@@ -1,0 +1,8 @@
+lua-mode
+
+(it-recipe "it(\"" (p "description") "\", function()" n> 
+    "local recipe = Recipe.new({" (p "ingredients") "})" n>
+    "local name = recipe:generateName(" (p "config") ")" n>
+    "assert.are.equal(" (p "expected") ", name)" n>
+    r> n
+    "end)")

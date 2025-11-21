@@ -1,4 +1,5 @@
 ;;; early-init.el --- -*- lexical-binding: t; -*-
+(setq package-enable-at-startup nil)
 
 (setq lsp-use-plists t)
 (setenv "LSP_USE_PLISTS" "true")
@@ -9,5 +10,4 @@
 ;;                             (file-truename load-file-name))))
 ;; (chemacs-load-user-early-init)
 
-(setq package-enable-at-startup nil)
 

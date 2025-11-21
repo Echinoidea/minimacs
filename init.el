@@ -37,38 +37,6 @@
 	(setq xclip-method (quote wl-copy))
 	)
 
-;; This doesn't work when emacs daemon is run through systemd because wayland is not loaded yet
-;; Clipboard for Wayland
-;; (setq wl-copy-process nil)
-;; (defun wl-copy (text)
-;;   (setq wl-copy-process (make-process :name "wl-copy"
-;;                                       :buffer nil
-;;                                       :command '("wl-copy" "-f" "-n")
-;;                                       :connection-type 'pipe))
-;;   (process-send-string wl-copy-process text)
-;;   (process-send-eof wl-copy-process))
-
-;; (defun wl-paste ()
-;;   (if (and wl-copy-process (process-live-p wl-copy-process))
-;;       nil ; Skip paste while we're the one who owns the clipboard
-;;     (shell-command-to-string "wl-paste -n | tr -d \r")))
-
-;; (setq interprogram-cut-function 'wl-copy)
-;; (setq interprogram-paste-function 'wl-paste)
-
-;; Use xclip for clipboard integration
-;;(setq interprogram-cut-function
-;;      (lambda (text &optional push)
-;;        (with-temp-buffer
-;;          (insert text)
-;;          (call-process-region (point-min) (point-max) "xclip" nil nil nil "-selection" "clipboard"))))
-;;
-;;(setq interprogram-paste-function
-;;      (lambda ()
-;;        (let ((xclip-output (shell-command-to-string "xclip -o -selection clipboard")))
-;;          (unless (string= (car kill-ring) xclip-output)
-;;            xclip-output))))
-
 ;; Disable Emacs toolbar, menubar, and scrollbar
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -205,6 +173,22 @@
 (keymap-global-set "C-h C-t" 'consult-theme)
 
 
+(use-package perspective
+  :bind (("C-x C-b" . persp-list-buffers)
+         ("C-<tab> b" . persp-switch-to-buffer*)
+         ("C-<tab> k" . persp-kill-buffer*)
+         ("C-<tab> <tab>" . persp-switch))
+  :custom
+  (persp-mode-prefix-key (kbd "C-<tab>"))
+  :init
+  (persp-mode)
+  :hook
+  (after-make-frame-functions . 
+   (lambda (frame)
+     (with-selected-frame frame
+       (set-face-attribute 'persp-selected-face nil 
+                           :foreground (face-foreground 'font-lock-keyword-face))))))
+
 (use-package vterm)
 (use-package meow-vterm
 	:straight '(meow-vterm :type git :host github :repo "accelbread/meow-vterm" :branch "master")
@@ -266,10 +250,18 @@
 				 "Fantasque Sans Mono-10"
 				 "AporeticSansMonoNerdFont-11")))
 
+(use-package doom-wallust
+  :straight '(doom-wallust :type nil :local-repo "~/code/elisp/doom-wallust"))
+
+;; Add custom theme directory
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+
 
 ;; DOOM THEMES
 (use-package doom-themes
   :ensure t
+	:after (doom-wallust)
+	
   :custom
   ;; Global settings (defaults)
   (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
@@ -277,7 +269,7 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'doom-nord-aurora t)
+  (load-theme 'doom-wallust-dark t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -286,17 +278,71 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
-;; Add custom theme directory
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 
-(use-package doom-wallust
-  :straight '(doom-wallust :type nil :local-repo "~/code/elisp/doom-wallust"))
 
 ;; MODELINE
 
 (use-package mood-line
   :straight '(mood-line :type git :host github :repo "jessiehildebrandt/mood-line" :branch "master")
   :config (mood-line-mode))
+
+
+;; Configure Tempel
+(use-package tempel
+  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+         ("M-*" . tempel-insert))
+
+  :init
+
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.  `tempel-expand'
+    ;; only triggers on exact matches. We add `tempel-expand' *before* the main
+    ;; programming mode Capf, such that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-expand completion-at-point-functions))
+
+    ;; Alternatively use `tempel-complete' if you want to see all matches.  Use
+    ;; a trigger prefix character in order to prevent Tempel from triggering
+    ;; unexpectly.
+    ;; (setq-local corfu-auto-trigger "/"
+    ;;             completion-at-point-functions
+    ;;             (cons (cape-capf-trigger #'tempel-complete ?/)
+    ;;                   completion-at-point-functions))
+		)
+
+  (add-hook 'conf-mode-hook 'tempel-setup-capf)
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+	)
+
+;; Optional: Add tempel-collection if you want ready-made templates.
+(use-package tempel-collection)
+
+;; (use-package punch-line
+;;   :straight (punch-line :type git 
+;;                         :host github 
+;;                         :repo "konrad1977/punch-line")
+;;   :hook ((after-init . punch-line-mode)
+;;          (after-init . punch-weather-update)
+;;          (after-init . punch-load-tasks))
+;;   :config
+;;   (setq
+;;    punch-line-left-separator "  "
+;;    punch-line-right-separator "  "
+;;    punch-show-buffer-position t
+;; 	 punch-show-modal-section t
+;; 	 punch-show-copilot-info nil
+;; 	 punch-show-battery-info nil
+;; 	 punch-modal-divider-style 'arrow
+;; 	 punch-show-weather-info nil
+;; 	 ))
+
 
 (use-package page-break-lines)
 (global-page-break-lines-mode)
@@ -371,24 +417,42 @@
 
 (use-package zoom
   :straight t
-  :config
-  (zoom-mode t)
+  :custom
+  (zoom-size '(0.618 . 0.618))
+  (zoom-minibuffer-preserve-layout t)
   
-  (setq zoom-size '(0.618 . 0.618))
+  :config
+  ;; Set all ignore rules BEFORE enabling zoom-mode
   (setq zoom-ignored-major-modes '(dired-mode markdown-mode which-key-mode vundo-mode))
-  (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*" " *vundo tree*"))
+  (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*" " *vundo tree*" " *Help*" "*Help*"))
   (setq zoom-ignored-buffer-name-regexps '("^lsp-ui"))
   (setq zoom-ignore-predicates 
         '((lambda () 
             (string-match-p " \\*which-key\\*" (buffer-name)))))
-  (setq zoom-minibuffer-preserve-layout t))
+  
+  ;; Now enable zoom-mode
+  (zoom-mode 1))
+
+;; (use-package zoom
+;;   :straight t
+;;   :config
+;;   (zoom-mode t)
+
+;;   (setq zoom-size '(0.618 . 0.618))
+;;   (setq zoom-ignored-major-modes '(dired-mode markdown-mode which-key-mode vundo-mode))
+;;   (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*" " *vundo tree*" " *Help*" "*Help*"))
+;;   (setq zoom-ignored-buffer-name-regexps '("^lsp-ui"))
+;;   (setq zoom-ignore-predicates 
+;;         '((lambda () 
+;;             (string-match-p " \\*which-key\\*" (buffer-name)))))
+;;   (setq zoom-minibuffer-preserve-layout t))
 
 (with-eval-after-load 'which-key
   (defun my/fix-which-key-window ()
     "Fix which-key window size after display."
     (when-let ((window (get-buffer-window which-key--buffer)))
       (with-selected-window window
-        (setq window-size-fixed t))))
+        (setq window-size-fixed "height"))))
   
   (add-hook 'which-key-init-buffer-hook #'my/fix-which-key-window))
 
@@ -516,6 +580,10 @@
   ;;           ;; NOTE 2022-02-05: Cycle through candidate groups
   ;;           "C-M-n" #'vertico-next-group
   ;;           "C-M-p" #'vertico-previous-group)
+	:init
+	;; (vertico-multiform-mode)
+  (vertico-mode)
+		
   :custom
   (vertico-count 13)                    ; Number of candidates to display
   (vertico-resize t)
@@ -523,7 +591,6 @@
   ;; :hook ((rfn-eshadow-update-overlay . vertico-directory-tidy) ; Clean up file path when typing
   ;;        (minibuffer-setup . vertico-repeat-save)) ; Make sure vertico state is saved
   :config
-  (vertico-mode)
   ;; Prefix the current candidate with “» ”. From
   ;; https://github.com/minad/vertico/wiki#prefix-current-candidate-with-arrow
   (advice-add #'vertico--format-candidate :around
@@ -534,6 +601,8 @@
                      (propertize "» " 'face 'vertico-current)
                    "  ")
 								 cand)))
+
+	;; (setq vertico-multiform-commands '((xdg-launcher-run-app buffer)))
   )
 
 (use-package orderless
@@ -799,7 +868,7 @@
 	:mode "\\.hs\\'")
 
 (use-package qml-mode
-             :mode "\\.qml\\'")
+  :mode "\\.qml\\'")
 
 (use-package sxhkdrc-mode)
 
@@ -1055,7 +1124,7 @@
           treemacs-space-between-root-nodes        t
           treemacs-tag-follow-cleanup              t
           treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      -2
+          treemacs-text-scale                      -1
           treemacs-user-mode-line-format           nil
           treemacs-user-header-line-format         nil
           treemacs-wide-toggle-width               70
@@ -1115,7 +1184,9 @@
 (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
   :after (treemacs persp-mode) ;;or perspective vs. persp-mode
   :ensure t
-  :config (treemacs-set-scope-type 'Perspectives))
+  :config (treemacs-set-scope-type 'Perspectives)
+	)
+
 
 (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
   :after (treemacs)
@@ -1162,15 +1233,7 @@
 
 ;; Workspaces
 
-(use-package perspective
-  :bind (("C-x C-b" . persp-list-buffers)
-         ("C-<tab> b" . persp-switch-to-buffer*)
-         ("C-<tab> k" . persp-kill-buffer*)
-				 ("C-<tab> <tab>" . persp-switch))
-  :custom
-  (persp-mode-prefix-key (kbd "C-<tab>"))
-  :init
-  (persp-mode))
+
 ;; :config
 ;; ;; Integrate with projectile
 ;; (with-eval-after-load "projectile"
@@ -1391,14 +1454,65 @@
 (use-package xdg-launcher
   :straight '(xdg-launcher :host github :repo "emacs-exwm/xdg-launcher"))
 
+;; (setq vertico-buffer-display-action
+;;       '(display-buffer-full-frame))
 
-(use-package request)
+(defun emenu-drun ()
+  "Launch xdg-launcher in vertico-only frame."
+  (interactive)
+    (let ((frame (selected-frame)))  ; Store reference to the current frame
+    
+    ;; Set the frame's name to "launcher" (for bspwm rules)
+    (set-frame-parameter frame 'name "emenu-drun")
+    
+    ;; ;; Close any extra windows (shouldn't be any in minibuffer-only frame, but just in case)
+    ;; (delete-other-windows)
+    
+    ;; Run the launcher and ensure frame cleanup afterward
+    (unwind-protect
+        ;; Run the actual launcher command
+        (xdg-launcher-run-app)
+      
+      ;; This cleanup code runs after xdg-launcher-run-app completes OR if you hit C-g
+      (delete-frame frame))))
 
-;; This is really cool, disabled for now though
-;; (use-package consult-web
-;;   :straight (consult-web :type git :host github :repo "armindarvish/consult-web" :branch "main" :files (:defaults "sources/*.el"))
-;;   :after consult
-;;   )
+(defun emenu--consult-open-url ()
+  "Select a URL from a list and open it in Firefox."
+  (interactive)
+  (let* ((urls '("https://github.com"
+                 "https://news.ycombinator.com"
+                 "https://reddit.com"
+                 "https://stackoverflow.com"
+                 "https://app.slack.com/client/T06DFCFF925/C06DRGRMUAC"
+								 "https://outlook.office.com/mail/"
+								 "https://usflearn.instructure.com/"
+								 "http://localhost:3000"))
+         (selected (consult--read urls
+                                  :prompt "Open URL: "
+                                  :category 'url
+                                  :sort nil
+                                  :require-match t)))
+    (start-process "firefox" nil "firefox" selected)))
+
+(defun emenu-url ()
+  "Launch xdg-launcher in vertico-only frame."
+  (interactive)
+    (let ((frame (selected-frame)))  ; Store reference to the current frame
+    
+    ;; Set the frame's name to "launcher" (for bspwm rules)
+    (set-frame-parameter frame 'name "emenu-url")
+    
+    ;; ;; Close any extra windows (shouldn't be any in minibuffer-only frame, but just in case)
+    ;; (delete-other-windows)
+    
+    ;; Run the launcher and ensure frame cleanup afterward
+    (unwind-protect
+        ;; Run the actual launcher command
+        (emenu--consult-open-url)
+      
+      ;; This cleanup code runs after xdg-launcher-run-app completes OR if you hit C-g
+      (delete-frame frame))))
+
 
 ;; Extra Themes
 (use-package autothemer)
@@ -1407,20 +1521,49 @@
 	:straight '(south-theme :host github :repo "SophieBosio/south" :branch "main"))
 
 (use-package cyanometric-theme
-             :straight '(cyanometric-theme :host github :repo "emacsfodder/emacs-theme-cyanometric" :branch "master"))
+  :straight '(cyanometric-theme :host github :repo "emacsfodder/emacs-theme-cyanometric" :branch "master"))
+
 (use-package orangey-bits-theme 
-             :straight '(orangey-bits-theme :host github :repo "emacsfodder/emacs-theme-orangey-bits" :branch "master"))
+  :straight '(orangey-bits-theme :host github :repo "emacsfodder/emacs-theme-orangey-bits" :branch "master"))
+
 (use-package vegetative-theme)
+
 (use-package creamsody-theme)
 
 (use-package darktooth-theme)
+
 (use-package soothe-theme)
 
 (use-package sakura-theme)
 
 (use-package kaolin-themes)
 
-(use-package olivetti)
+(use-package doric-themes)
+
+(use-package olivetti
+	:config
+	(setq olivetti-width 116))
+
+
+;; Enter writing mode
+(defun my/writing-mode-light ()
+	"Enter writing mode with light theme."
+	(interactive)
+	(olivetti-mode)
+	(olivetti-set-width 116)
+	(load-theme 'modus-operandi)
+	(enable-theme 'modus-operandi)
+	;; TODO: Set font to use non-monospace font
+	)
+
+(defun my/exit-writing-mode ()
+	"Exit writing mode."
+	(interactive)
+	(olivetti-mode) ;; This doesn't disable it for some reason
+	)
+
+
+(use-package focus)
 
 ;; The built-in `savehist-mode' saves minibuffer histories.  Vertico
 ;; can then use that information to put recently selected options at the top
@@ -1429,15 +1572,32 @@
 ;; }}}
 ;; Store backup files elsewhere
 
-;; Store all backup files in a single directory
+
+;; Put backup files in a central location
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+
+;; Put auto-save files in a central location
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-saves/" t)))
+
+;; Create the directories if they don't exist
+(make-directory "~/.emacs.d/backups" t)
+(make-directory "~/.emacs.d/auto-saves" t)
 
 ;; Make sure the directory exists
 (unless (file-exists-p "~/.emacs.d/backups")
 	(make-directory "~/.emacs.d/backups" t))
 
-;;; Code:
-(server-mode)
-
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+;;(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ ;; '(olivetti-fringe ((t nil))))

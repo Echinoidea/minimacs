@@ -46,15 +46,15 @@ Can be an integer to determine the exact padding."
   :background-mode 'dark
 
   ;; name        default   256       16
-  ((bg         '("#FFFFFF" nil       nil))
-   (fg         '("#000000" nil       nil))
+  ((bg         '("#282A36" nil       nil))
+   (fg         '("#EFF0EB" nil       nil))
 
    ;; Alternatives for solaire-mode
-   (bg-alt     '("#FFFFFF" nil       nil))
-   (fg-alt     '("#F2F2F2" nil       nil))
+   (bg-alt     '("#33303B" nil       nil))
+   (fg-alt     '("#4F4B58" nil       nil))
 
    ;; Base colors - spectrum from bg to fg
-   (base0      '("#FFFFFF" nil "black"))
+   (base0      '("#33303B" nil "black"))
    (base1      (doom-darken bg 0.05))
    (base2      (doom-darken bg 0.1))
    (base3      (doom-darken bg 0.15))
@@ -62,19 +62,19 @@ Can be an integer to determine the exact padding."
    (base5      (doom-lighten bg 0.2))
    (base6      (doom-lighten bg 0.3))
    (base7      (doom-lighten fg 0.1))
-   (base8      '("#595959" nil "white"))
+   (base8      '("#EFF0EB" nil "white"))
 
    (grey       base5)
-   (red        '("#A60000" nil "red"))
-   (orange     '("#D00000" nil "brightred"))
-   (green      '("#006800" nil "green"))
-   (teal       '("#005E8B" nil "brightgreen"))
-   (yellow     '("#6F5500" nil "yellow"))
-   (blue       '("#0031A9" nil "brightblue"))
-   (dark-blue  '("#0000FF" nil "blue"))
-   (magenta    '("#721045" nil "magenta"))
-   (violet     '("#DD22DD" nil "brightmagenta"))
-   (cyan       '("#008899" nil "brightcyan"))
+   (red        '("#FF5C57" nil "red"))
+   (orange     '("#FF5C57" nil "brightred"))
+   (green      '("#5AF78E" nil "green"))
+   (teal       '("#9AEDFE" nil "brightgreen"))
+   (yellow     '("#F3F99D" nil "yellow"))
+   (blue       '("#57C7FF" nil "brightblue"))
+   (dark-blue  '("#57C7FF" nil "blue"))
+   (magenta    '("#FF6AC1" nil "magenta"))
+   (violet     '("#FF6AC1" nil "brightmagenta"))
+   (cyan       '("#9AEDFE" nil "brightcyan"))
    (dark-cyan  (doom-darken cyan 0.3))
 
    ;; Face categories

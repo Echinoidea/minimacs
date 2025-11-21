@@ -1,1 +1,1 @@
-("~/.config/" "~/dmenu-scripts-x/" "~/dmenu-scripts/" "~/repos/i-begin/" "~/.emacs.d/" "~/repos/SiltStrider/" "~/code/quickshell/" "~/nixos/" "~/.config/xmonad/" "~/nixos/config/dwm/" "~/code/nextjs/lis4934/" "~/.config/eww/")
+("~/.emacs.d/" "~/.config/" "~/nixos/" "~/repos/i-begin/" "~/repos/SiltStrider/" "~/Downloads/" "~/dmenu-scripts/" "~/code/quickshell/" "~/code/react/pro-writing-charts/app/" "~/dmenu-scripts-x/" "~/.config/xmonad/" "~/nixos/config/dwm/" "~/code/nextjs/lis4934/" "~/.config/eww/")
