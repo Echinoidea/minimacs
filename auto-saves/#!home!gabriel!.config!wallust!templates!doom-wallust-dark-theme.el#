@@ -46,15 +46,15 @@ Can be an integer to determine the exact padding."
   :background-mode 'dark
 
   ;; name        default   256       16
-  ((bg         '("#DADADA" nil       nil))
-   (fg         '("#4E4E4E" nil       nil))
+  ((bg         '("{{background}}" nil       nil))
+   (fg         '("{{foreground}}" nil       nil))
 
    ;; Alternatives for solaire-mode
-   (bg-alt     '("#4E4E4E" nil       nil))
-   (fg-alt     '("#3A3A3A" nil       nil))
+   (bg-alt     '("{{color0}}" nil       nil))
+   (fg-alt     '("{{color8}}" nil       nil))
 
    ;; Base colors - spectrum from bg to fg
-   (base0      '("#4E4E4E" nil "black"))
+   (base0      '("{{color0}}" nil "black"))
    (base1      (doom-darken bg 0.05))
    (base2      (doom-darken bg 0.1))
    (base3      (doom-darken bg 0.15))
@@ -62,19 +62,19 @@ Can be an integer to determine the exact padding."
    (base5      (doom-lighten bg 0.2))
    (base6      (doom-lighten bg 0.3))
    (base7      (doom-lighten fg 0.1))
-   (base8      '("#EEEEEE" nil "white"))
+   (base8      '("{{color15}}" nil "white"))
 
    (grey       base5)
-   (red        '("#AF5F5F" nil "red"))
-   (orange     '("#870100" nil "brightred"))
-   (green      '("#5F885F" nil "green"))
-   (teal       '("#5F8787" nil "brightgreen"))
-   (yellow     '("#AF8760" nil "yellow"))
-   (blue       '("#5F87AE" nil "brightblue"))
-   (dark-blue  '("#0087AF" nil "blue"))
-   (magenta    '("#875F87" nil "magenta"))
-   (violet     '("#87025F" nil "brightmagenta"))
-   (cyan       '("#008787" nil "brightcyan"))
+   (red        '("{{color1}}" nil "red"))
+   (orange     '("{{color9}}" nil "brightred"))
+   (green      '("{{color2}}" nil "green"))
+   (teal       '("{{color6}}" nil "brightgreen"))
+   (yellow     '("{{color3}}" nil "yellow"))
+   (blue       '("{{color4}}" nil "brightblue"))
+   (dark-blue  '("{{color12}}" nil "blue"))
+   (magenta    '("{{color5}}" nil "magenta"))
+   (violet     '("{{color13}}" nil "brightmagenta"))
+   (cyan       '("{{color14}}" nil "brightcyan"))
    (dark-cyan  (doom-darken cyan 0.3))
 
    ;; Face categories

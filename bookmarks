@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("test salad"
+(("lang"
+ (filename . "~/repos/i-begin/app/api/admin/dashboard/export/exportSiteScreeningData/route.ts")
+ (front-context-string . "e))\n		}\n\n		// Ge")
+ (rear-context-string . "cher: TeacherTyp")
+ (position . 4799)
+ (last-modified 26916 47806 819202 127000))
+("states"
+ (filename . "~/repos/i-begin/app/ui/modals/EditTeacherModal.tsx")
+ (front-context-string . "		firstName: \"\",")
+ (rear-context-string . "a] = useState({\n")
+ (position . 2596)
+ (last-modified 26912 44599 754570 59000))
+("test salad"
  (filename . "~/repos/SiltStrider/scripts/custom/Cooking/spec/namegen_spec.lua")
  (front-context-string . ", sload_ear })\n	")
  (rear-context-string . "llow_wisp_dust, ")

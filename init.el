@@ -34,7 +34,7 @@
 	(setq xclip-program "xclip")
 	(setq xclip-select-enable-clipboard t)
 	(setq xclip-mode t)
-	(setq xclip-method (quote wl-copy))
+	(setq xclip-method "xclip -i")
 	)
 
 ;; Disable Emacs toolbar, menubar, and scrollbar
@@ -157,15 +157,6 @@
                 (meow--execute-kbd-macro "<escape>"))
             (push event unread-command-events)))))))
 
-(defun meow-two-char-exit-insert-state ()
-  "Exit insert mode with two-key sequence."
-  (interactive)
-  (if (derived-mode-p 'vterm-mode)
-      (self-insert-command 1)  ; Just insert the character normally in vterm THIS DOESNT WORK IN DAEMON MODE FOR SOME REASON
-    (meow--two-char-exit-insert-state meow-two-char-escape-sequence)))
-
-(define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
-						#'meow-two-char-exit-insert-state)
 
 ;; end j k
 
@@ -184,15 +175,31 @@
   (persp-mode)
   :hook
   (after-make-frame-functions . 
-   (lambda (frame)
-     (with-selected-frame frame
-       (set-face-attribute 'persp-selected-face nil 
-                           :foreground (face-foreground 'font-lock-keyword-face))))))
+															(lambda (frame)
+																(with-selected-frame frame
+																	(set-face-attribute 'persp-selected-face nil 
+																											:foreground (face-foreground 'font-lock-keyword-face))))))
+
+
 
 (use-package vterm)
+
+(defun meow-two-char-exit-insert-state ()
+  "Exit insert mode with two-key sequence."
+  (interactive)
+  (if (derived-mode-p 'vterm-mode)
+      (self-insert-command 1)  ; Just insert the character normally in vterm THIS DOESNT WORK IN DAEMON MODE FOR SOME REASON
+    (meow--two-char-exit-insert-state meow-two-char-escape-sequence)))
+
+(if (not(eq (daemonp) "emenu"))
+		(define-key meow-insert-state-keymap (substring meow-two-char-escape-sequence 0 1)
+								#'meow-two-char-exit-insert-state))
+
+
 (use-package meow-vterm
 	:straight '(meow-vterm :type git :host github :repo "accelbread/meow-vterm" :branch "master")
-	:ensure t)
+	:ensure t
+	)
 
 (meow-vterm-enable)
 
@@ -248,7 +255,14 @@
 				(list
 				 "Maple Mono NF-9:spacing=90"
 				 "Fantasque Sans Mono-10"
-				 "AporeticSansMonoNerdFont-11")))
+				 "AporeticSansMonoNerdFont-11"
+				 "Tinos Nerd Font-11"
+				 "Chomsky-11"
+				 "Ioskeley Mono-10"
+				 "TeX Gyre Schola-11"
+				 "TeX Gyre Cursor-11"
+				 "TeX Gyre Bonum-11"
+				 "TeX Gyre Chorus-11")))
 
 (use-package doom-wallust
   :straight '(doom-wallust :type nil :local-repo "~/code/elisp/doom-wallust"))
@@ -269,7 +283,7 @@
   ;; for treemacs users
   (doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
   :config
-  (load-theme 'doom-wallust-dark t)
+  (load-theme 'doom-wallust-light t)
 
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -431,21 +445,8 @@
             (string-match-p " \\*which-key\\*" (buffer-name)))))
   
   ;; Now enable zoom-mode
-  (zoom-mode 1))
+  (zoom-mode nil))
 
-;; (use-package zoom
-;;   :straight t
-;;   :config
-;;   (zoom-mode t)
-
-;;   (setq zoom-size '(0.618 . 0.618))
-;;   (setq zoom-ignored-major-modes '(dired-mode markdown-mode which-key-mode vundo-mode))
-;;   (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*" " *vundo tree*" " *Help*" "*Help*"))
-;;   (setq zoom-ignored-buffer-name-regexps '("^lsp-ui"))
-;;   (setq zoom-ignore-predicates 
-;;         '((lambda () 
-;;             (string-match-p " \\*which-key\\*" (buffer-name)))))
-;;   (setq zoom-minibuffer-preserve-layout t))
 
 (with-eval-after-load 'which-key
   (defun my/fix-which-key-window ()
@@ -455,48 +456,6 @@
         (setq window-size-fixed "height"))))
   
   (add-hook 'which-key-init-buffer-hook #'my/fix-which-key-window))
-
-;; (defun my/setup-zoom ()
-;;   "Setup zoom configuration after frame is created."
-;;   (require 'zoom nil t)
-;;   (when (featurep 'zoom)
-;;     (zoom-mode t)
-;;     (setq zoom-size '(0.618 . 0.618))
-;;     (setq zoom-ignored-major-modes '(dired-mode markdown-mode which-key-mode vundo-mode))
-;;     (setq zoom-ignored-buffer-names '("zoom.el" "*lsp-ui-imenu*" " *vundo tree*"))
-;;     (setq zoom-ignored-buffer-name-regexps '("^lsp-ui"))
-;;     (setq zoom-ignore-predicates 
-;;           '((lambda () 
-;;               (string-match-p "\\*which-key\\*" (buffer-name)))))
-;;     (setq zoom-minibuffer-preserve-layout t)))
-
-;; (if (daemonp)
-;;     (add-hook 'after-make-frame-functions
-;;               (lambda (frame)
-;;                 (with-selected-frame frame
-;;                   (my/setup-zoom))))
-;;   (my/setup-zoom))
-
-
-
-;; (defun my/which-key-fix (original window &rest args)
-;;   "Prevent zoom from affecting which-key window size."
-;;   (let ((buf-name (buffer-name (window-buffer window))))
-;;     (if (string-match-p "\\*which-key\\*" buf-name)
-;;         (progn
-;;           (with-selected-window window
-;;             (setq window-size-fixed nil))
-;;           (apply original window args)
-;;           (with-selected-window window
-;;             (setq window-size-fixed t)))
-;;       (apply original window args))))
-
-;; (advice-add 'fit-window-to-buffer :around #'my/which-key-fix)
-
-;; (defun my/check-advice ()
-;;   (interactive)
-;;   (message "fit-window-to-buffer advice: %s"
-;;            (advice-member-p #'my/which-key-fix 'fit-window-to-buffer)))
 
 ;; (defun my/which-key-fix (original window &rest args)
 ;;   "Prevent zoom from affecting which-key window size."
@@ -583,7 +542,7 @@
 	:init
 	;; (vertico-multiform-mode)
   (vertico-mode)
-		
+	
   :custom
   (vertico-count 13)                    ; Number of candidates to display
   (vertico-resize t)
@@ -759,46 +718,6 @@
 
 (use-package flymake)
 
-;; Enable Corfu completion UI
-;; See the Corfu README for more configuration tips.
-;;;; Code Completion
-;; (use-package corfu
-;;   :ensure t
-;;   :custom
-;;   (corfu-cycle t)                 ; Allows cycling through candidates
-;;   (corfu-auto nil)                ; Disable auto completion (fixes freezing)
-;;   (corfu-auto-prefix 3)           ; Minimum length of prefix for completion
-;;   (corfu-auto-delay 0.2)          ; Delay for completion
-;;   (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup
-;;   (corfu-preview-current 'insert) ; Insert previewed candidate
-;;   (corfu-preselect 'prompt)
-;;   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
-
-;;   ;; Performance tweaks to help with freezing
-;;   (corfu-count 10)                ; Limit candidates shown
-;;   (corfu-max-width 100)           ; Limit popup width
-;;   (corfu-min-width 20)
-
-;;   :bind (:map corfu-map
-;;               ("M-SPC"      . corfu-insert-separator)
-;;               ("TAB"        . corfu-next)
-;;               ("S-TAB"      . corfu-previous)
-;;               ("S-<return>" . corfu-insert)
-;;               ("RET"        . nil))  ; Don't bind RET in corfu-map
-
-;;   :init
-;;   (global-corfu-mode)
-;;   (corfu-history-mode)
-;;   (corfu-popupinfo-mode))
-
-;; :config
-;; ;; TAB indents when corfu is not active, completes when it is
-;; (keymap-set corfu-mode-map "TAB" 
-;;             `(menu-item "" nil :filter
-;;                         ,(lambda (&optional _)
-;;                            (and (not (corfu-mode--popup-support-p))
-;;                                #'indent-for-tab-command)))))
-
 (add-to-list 'recentf-exclude (expand-file-name "bookmarks" user-emacs-directory))
 
 (use-package corfu
@@ -806,10 +725,10 @@
   ;; Optional customizations
   :custom
   (corfu-cycle t)                 ; Allows cycling through candidates
-  (corfu-auto nil)                  ; Enable auto completion
+  (corfu-auto nil)                ; Enable auto completion
   (corfu-auto-prefix 3)           ; Minimum length of prefix for completion
-  (corfu-auto-delay 0.2)            ; No delay for completion
-  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that numver of seconds
+  (corfu-auto-delay 0.2)          ; No delay for completion
+  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that number of seconds
   (corfu-preview-current 'insert) ; insert previewed candidate
   (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
@@ -820,15 +739,21 @@
               ("S-TAB"      . corfu-previous)
               ("S-<return>" . corfu-insert)
               ("RET"        . corfu-insert))
-
   :init
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode)
-	:config
-	(keymap-set corfu-mode-map "TAB" 'completion-at-point)
-	)
-
+  :config
+  ;; Make TAB only trigger completion when Corfu popup is visible
+  (keymap-set corfu-mode-map "TAB" 
+              (lambda ()
+                (interactive)
+                (if (and (corfu-mode) (not completion-in-region-mode))
+                    (indent-for-tab-command)
+                  (completion-at-point))))
+	
+  ;; Disable Corfu in org-mode
+  (add-hook 'org-mode-hook (lambda () (corfu-mode -1))))
 
 ;; Add extensions
 (use-package cape
@@ -1318,7 +1243,7 @@
 							(setq-local window-size-fixed t)))
   
   :bind
-  ("C-x u" . vundo)
+  ;; ("C-x u" . vundo)
   ;; Optional: easier access
   ("C-/" . vundo))
 
@@ -1366,52 +1291,11 @@
 ;; {{{ Fold Test
 ;; Vimish fold
 (use-package vimish-fold)
-
+;; }}}
 
 
 ;; org-mode
 (setq org-directory "~/org/")
-
-
-;; (use-package org-modern
-;; 	;; :config
-;;   ;; (setq
-;;   ;;  ;; Edit settings
-;;   ;;  org-auto-align-tags t
-;;   ;;  ;; org-tags-column 0
-;;   ;;  org-fold-catch-invisible-edits 'show-and-error
-;;   ;;  org-special-ctrl-a/e t
-;;   ;;  org-insert-heading-respect-content t
-;; 	;;  org-indirect-mode nil
-;;   ;;  ;; Org styling, hide markup etc.
-;;   ;;  org-hide-emphasis-markers t
-;;   ;;  org-pretty-entities t
-;;   ;;  org-agenda-tags-column 0
-;;   ;;  org-ellipsis "...")
-;; 	:custom
-;; 	(org-modern-star '("✿" "❀" "❁" "❃" "❋" "✾" "✽" "✻"))  ; NOT 'fold
-;;   (org-modern-hide-stars nil)
-;;   (org-modern-table nil)
-;;   (org-modern-list '((?- . "-") (?* . "•") (?+ . "‣")))
-;; 	(org-auto-align-tags t)
-;;   (org-fold-catch-invisible-edits 'show-and-error)
-;;   (org-special-ctrl-a/e t)
-;;   (org-insert-heading-respect-content t)
-;; 	(org-indirect-mode nil)
-;;   (org-hide-emphasis-markers t)
-;;   (org-pretty-entities t)
-;;   (org-agenda-tags-column 0)
-;;   (org-ellipsis "...")
-;;   :hook
-;;   (org-mode . org-modern-mode)
-;;   (org-agenda-finalize . org-modern-agenda)
-;; 	:config
-;; 	(global-org-modern-mode))
-
-;; (use-package org-modern-indent
-;;   :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
-;; 	:config ; add late to hook
-;; 	(add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
 (use-package org-modern
   :straight t
@@ -1441,6 +1325,20 @@
   (setq deft-directory "~/org/deft/"
 				deft-recursive t))
 
+(defun consult-find-org ()
+	;; Find a file in the ~/org dir with consult.
+	(interactive)
+	(consult-find "~/org/")
+	)
+
+(global-unset-key (kbd "C-o")) 
+
+
+(define-key projectile-mode-map (kbd "C-o C-d C-d") 'deft)
+(define-key projectile-mode-map (kbd "C-o C-d C-f") 'deft-find-file)
+(define-key projectile-mode-map (kbd "C-o C-d C-n") 'deft-new-file-named)
+(define-key projectile-mode-map (kbd "C-o C-f C-f") 'consult-find-org)
+
 (add-hook 'org-mode-hook #'visual-line-mode)
 
 ;; GPTEL
@@ -1460,7 +1358,7 @@
 (defun emenu-drun ()
   "Launch xdg-launcher in vertico-only frame."
   (interactive)
-    (let ((frame (selected-frame)))  ; Store reference to the current frame
+  (let ((frame (selected-frame)))  ; Store reference to the current frame
     
     ;; Set the frame's name to "launcher" (for bspwm rules)
     (set-frame-parameter frame 'name "emenu-drun")
@@ -1497,7 +1395,7 @@
 (defun emenu-url ()
   "Launch xdg-launcher in vertico-only frame."
   (interactive)
-    (let ((frame (selected-frame)))  ; Store reference to the current frame
+  (let ((frame (selected-frame)))  ; Store reference to the current frame
     
     ;; Set the frame's name to "launcher" (for bspwm rules)
     (set-frame-parameter frame 'name "emenu-url")
@@ -1540,9 +1438,12 @@
 
 (use-package doric-themes)
 
+(use-package ef-themes)
+
 (use-package olivetti
 	:config
 	(setq olivetti-width 116))
+
 
 
 ;; Enter writing mode
@@ -1572,6 +1473,7 @@
 ;; }}}
 ;; Store backup files elsewhere
 
+(use-package kanagawa-themes)
 
 ;; Put backup files in a central location
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
@@ -1596,8 +1498,8 @@
  ;; If there is more than one, they won't work right.
  )
 ;;(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- ;; '(olivetti-fringe ((t nil))))
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+;; '(olivetti-fringe ((t nil))))
