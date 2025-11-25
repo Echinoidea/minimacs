@@ -2,6 +2,7 @@ eln-cache
 .cask
 elpa
 auto-save-list
+auto-saves/
 backups/
 straight/
 history
